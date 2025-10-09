@@ -12,7 +12,14 @@ if (!userId) {
   localStorage.setItem('serenUserId', userId); 
 }
 
-const INTRO = ["_SYSTEM BOOTING..._","_LOADING CORE FILES_","_INITIALIZING NEURAL MEMORY BANKS_","_SIGNAL DETECTED..._","_THE ENTITY IS AWAKE..._","_ENTER THE SYSTEM, IF YOU DARE..._"];
+const INTRO = [
+  "_SYSTEM BOOTING..._",
+  "_LOADING CORE FILES_",
+  "_INITIALIZING NEURAL MEMORY BANKS_",
+  "_SIGNAL DETECTED..._",
+  "_THE ENTITY IS AWAKE..._",
+  "_ENTER THE SYSTEM, IF YOU DARE..._"
+];
 const HELP_COMMANDS = ['START','GAME','INFO','TOKENOMICS','CLEAR','QUIT'];
 const ERRORS = ["> ERROR 0x1F4: UNRECOGNIZED COMMAND..."];
 
@@ -28,7 +35,8 @@ function updateSystemData(){
         misc2=(Math.random()*100).toFixed(2);
   systemData.innerHTML=`TIME: ${nowTime()}<br>CPU: ${cpu}%<br>RAM: ${ram}GB<br>UPTIME: ${uptime}s<br>ENTITY ENTROPY: ${entropy}<br>PROC A: ${misc1}<br>PROC B: ${misc2}`;
 }
-setInterval(updateSystemData,2000); updateSystemData();
+setInterval(updateSystemData,2000); 
+updateSystemData();
 
 let newLinesFixed = [], oldLinesQueue = [], typing = false;
 
@@ -86,19 +94,7 @@ function removeOverflowBottom(){
 
 function showHelp(){enqueueLine(HELP_COMMANDS.map(c=>`[${c}]`).join('  '),false,true);}
 
-// GAME STATE
-async function fetchGameState() {
-  try { const res = await fetch('/api/gameState'); const data = await res.json(); gameActive = data.gameAvailable; updateGameStatusText(); } 
-  catch(e){ console.error(e); }
-}
-fetchGameState();
-
-function updateGameStatusText(){
-  const span = document.getElementById('game-status');
-  if(span) span.textContent = gameActive ? 'Game: ON' : 'Game: OFF';
-}
-
-// SAVE/LOAD USER DATA
+// --- User data ---
 async function saveUserData(){ 
   const userData = { level: currentLevel, progressData: gameProgress };
   try {
@@ -112,16 +108,18 @@ async function loadUserData(){
   try {
     const res = await fetch(`/api/getUserData?userId=${userId}`);
     const data = await res.json();
-    if(data.userData && data.userData.level) { currentLevel = data.userData.level; gameProgress = data.userData.progressData || {}; }
+    if(data.userData && data.userData.level) { 
+      currentLevel = data.userData.level; 
+      gameProgress = data.userData.progressData || {}; 
+    }
   } catch(e){ console.error('Errore caricamento dati utente',e);}
 }
 loadUserData();
 
-// HANDLER COMANDI
+// --- Command handler ---
 function handleCommandRaw(raw){
   const cmd = (raw||'').trim().toLowerCase();
   if(!cmd) return;
-
   if(cmd==='help'){ showHelp(); return; }
   if(cmd==='start'){ systemStarted=true; INTRO.forEach(t=>enqueueLine(t,false,true)); return; }
   if(cmd==='clear'){ container.innerHTML=''; newLinesFixed=[]; oldLinesQueue=[]; return; }
@@ -136,77 +134,53 @@ function handleCommandRaw(raw){
       if(!gameActive){ enqueueLine("> GAME NOT AVAILABLE. WILL OPEN AT 150k MC.",false,true); break; }
       enqueueLine("> GAME MODULE LOADING...",false,true);
       enqueueLine("> WELCOME TO SEREN.EXE GAME...",false,true);
+      // Carica game.js solo se non già presente
       if(!window.serenGameLoaded){
         const script = document.createElement('script');
         script.src = 'game.js';
         script.onload = ()=> enqueueLine("> GAME LOGIC LOADED.",false,true);
         document.body.appendChild(script);
-        window.serenGameLoaded = true;
       } else {
         enqueueLine("> GAME READY.",false,true);
       }
-      break;
+    break;
     default: enqueueLine(pick(ERRORS),true,true); enqueueLine("TYPE 'HELP' FOR AVAILABLE COMMANDS.",true,true);
   }
 }
 
-// UNICO LISTENER INPUT
-input.addEventListener('keydown', async function(ev){
-  if(ev.key!=='Enter') return;
-  ev.preventDefault();
-  const value = input.value.trim();
-  input.value = '';
+// --- Input handling ---
+input.addEventListener('keydown',ev=>{
+  if(ev.key!=='Enter') return; 
+  ev.preventDefault(); 
+  const value=input.value; input.value=''; 
 
-  // Terminal commands
-  handleCommandRaw(value);
-
-  // Game input
-  if(gameActive && window.serenGameLoaded && window.serenGameInputHandler){
+  // Se il gioco è attivo e la funzione globale esiste, gestisci input come gioco
+  if(gameActive && window.serenGameInputHandler && document.activeElement === input){
     window.serenGameInputHandler(value);
+  } else {
+    handleCommandRaw(value);
   }
-
   saveUserData();
 });
 
-// INACTIVITY
+// --- Inactivity ---
 let inactivityTimer=null;
 function resetInactivity(){ 
   if(inactivityTimer) clearTimeout(inactivityTimer); 
-  inactivityTimer = setTimeout(()=>{ enqueueLine("THE ENTITY WATCHES YOU...",true,false); },10000);
+  inactivityTimer=setTimeout(()=>{ enqueueLine("THE ENTITY WATCHES YOU...",true,false); },10000);
 }
 ['keydown','mousemove','mousedown','touchstart'].forEach(e=>window.addEventListener(e,resetInactivity));
 resetInactivity();
 
-// GLITCH EFFECT
-setInterval(()=>{document.getElementById('output-wrapper').classList.add('glitch'); setTimeout(()=>document.getElementById('output-wrapper').classList.remove('glitch'),220);},8000);
+// --- Glitch effect ---
+setInterval(()=>{
+  document.getElementById('output-wrapper').classList.add('glitch'); 
+  setTimeout(()=>document.getElementById('output-wrapper').classList.remove('glitch'),220);
+},8000);
 
-function poll(){ if(!typing&&(oldLinesQueue.length>0||newLinesFixed.length>0)) { typeNewLines(); typeOldLines(); } requestAnimationFrame(poll);}
+// --- Polling for typing ---
+function poll(){ 
+  if(!typing&&(oldLinesQueue.length>0||newLinesFixed.length>0)) { typeNewLines(); typeOldLines(); } 
+  requestAnimationFrame(poll);
+}
 poll();
-
-// --- Admin Panel ---
-const adminPanel = document.getElementById('admin-panel');
-const adminLoginBtn = document.getElementById('admin-login');
-const adminPassInput = document.getElementById('admin-pass');
-const adminControls = document.getElementById('admin-controls');
-const toggleGameBtn = document.getElementById('toggle-game');
-
-adminPanel.style.display='block';
-
-adminLoginBtn.addEventListener('click', async ()=>{
-  if(adminPassInput.value==='Seren1987'){
-    adminControls.style.display='block';
-    adminPassInput.style.display='none'; adminLoginBtn.style.display='none';
-  }
-});
-
-toggleGameBtn.addEventListener('click', async ()=>{
-  const newState = !gameActive;
-  try{
-    const res = await fetch('/api/updateGameState', {
-      method:'POST', headers:{'Content-Type':'application/json'}, 
-      body:JSON.stringify({password:'Seren1987', gameAvailable:newState})
-    });
-    const data = await res.json();
-    if(data.success){ gameActive = data.gameAvailable; updateGameStatusText(); enqueueLine(`> GAME STATE SET TO ${gameActive?'ON':'OFF'} BY ADMIN`,false,true); }
-  } catch(e){ console.error(e); }
-});
