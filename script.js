@@ -174,7 +174,27 @@ adminLoginBtn.addEventListener('click', ()=>{
   }
 });
 
-// toggle game
+// toggle game con spie ON/OFF
+toggleGameBtn.style.position = 'relative';
+toggleGameBtn.style.paddingLeft = '30px';
+toggleGameBtn.style.paddingRight = '30px';
+toggleGameBtn.style.backgroundColor = '#333';
+toggleGameBtn.style.color = '#fff';
+toggleGameBtn.style.fontWeight = '700';
+
+// aggiungi spie rosso/verde
+const led = document.createElement('span');
+led.style.width = '12px';
+led.style.height = '12px';
+led.style.borderRadius = '50%';
+led.style.display = 'inline-block';
+led.style.position = 'absolute';
+led.style.left = '8px';
+led.style.top = '50%';
+led.style.transform = 'translateY(-50%)';
+led.style.backgroundColor = gameActive?'green':'red';
+toggleGameBtn.appendChild(led);
+
 toggleGameBtn.addEventListener('click', async ()=>{
   const newState = !gameActive;
   try{
@@ -186,8 +206,9 @@ toggleGameBtn.addEventListener('click', async ()=>{
     const data = await res.json();
     if(data.success){
       gameActive = data.gameAvailable;
-      document.getElementById('game-status').textContent = `Game: ${gameActive?'ON':'OFF'}`;
+      led.style.backgroundColor = gameActive?'green':'red';
       enqueueLine(`> GAME STATE SET TO ${gameActive?'ON':'OFF'} BY ADMIN`, false, true);
     }
   } catch(e){ console.error(e); }
 });
+
