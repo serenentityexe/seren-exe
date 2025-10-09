@@ -1,96 +1,49 @@
-/* === ADMIN PANEL === */
-#admin-icon {
-  position: fixed;
-  right: 14px;
-  bottom: 14px;
-  font-family: monospace;
-  font-size: 1.2em;
-  color: var(--accent);
-  background: rgba(127,154,113,0.08);
-  border: 1px solid rgba(127,154,113,0.2);
-  border-radius: 50%;
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  animation: pulse 3s infinite;
-  z-index: 9999;
+:root{
+  --accent:#7f9a71;
+  --bg:#030301;
+  --frame-shadow:rgba(127,154,113,0.06);
 }
-@keyframes pulse {
-  0%,100% {transform: scale(1); opacity: 0.8;}
-  50% {transform: scale(1.2); opacity: 1;}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--accent);font-family:"Courier New",monospace;overflow:hidden}
+#console{height:100vh;display:flex;align-items:center;justify-content:center;position:relative;padding:18px}
+#menu{position:absolute;left:18px;top:12px;display:flex;gap:14px;font-weight:700;opacity:0.95}
+#menu>div{cursor:pointer;user-select:none}
+#output-wrapper{
+  width:860px;height:560px;position:relative;
+  border:3px solid rgba(127,154,113,0.32);
+  border-radius:8px;
+  box-shadow: inset 0 0 30px var(--frame-shadow);
+  background:linear-gradient(180deg,#020201 0%, #060604 100%);
+  overflow:hidden;
 }
-
-#admin-panel {
-  position: fixed;
-  right: 20px;
-  bottom: 60px;
-  background: rgba(0,0,0,0.9);
-  border: 2px solid var(--accent);
-  border-radius: 8px;
-  padding: 12px 16px;
-  display: none;
-  flex-direction: column;
-  gap: 8px;
-  width: 200px;
-  z-index: 9999;
+#lines-container{
+  position:absolute;top:10px;left:10px;right:10px;
+  display:flex;flex-direction:column;gap:4px;
 }
-#admin-panel.visible { display: flex; }
-#admin-panel input {
-  background: transparent;
-  border: 1px solid var(--accent);
-  color: var(--accent);
-  padding: 4px 6px;
-  font-family: monospace;
-  width: 100%;
+.output-line{
+  color:var(--accent);
+  white-space:pre-wrap;
+  line-height:1.6em;
+  letter-spacing:0.9px;
+  font-size:1em;
+  opacity:1;
+  transition:opacity 0.6s ease, transform 0.4s ease;
 }
-#admin-panel button {
-  background: var(--accent);
-  color: #000;
-  border: none;
-  padding: 4px;
-  cursor: pointer;
-  font-weight: bold;
+.fade-out{opacity:0 !important; transform: translateY(4px);}
+#input-line{
+  margin-top:12px;display:flex;align-items:center;gap:8px;width:860px;justify-content:flex-start;font-weight:700;position:relative;
 }
-.toggle-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 6px;
+#input-line span{color:var(--accent)}
+#command{flex:1;background:transparent;border:none;outline:none;color:var(--accent);font-family:monospace;font-size:1em;padding:6px 4px;caret-color:var(--accent);}
+#system-data{
+  position:absolute;right:14px;bottom:10px;color:var(--accent);font-family:monospace;font-size:0.95em;text-align:right;opacity:0.95;
 }
-.switch {
-  position: relative;
-  display: inline-block;
-  width: 46px;
-  height: 22px;
+@keyframes crtJitter {0%{transform:translateY(0)}50%{transform:translateY(-0.6px)}100%{transform:translateY(0)}}
+#lines-container{animation:crtJitter 0.14s infinite}
+@media (max-width:940px){
+  #output-wrapper{width:94vw;height:62vh}
+  #input-line,#command{width:94vw}
 }
-.switch input { display: none; }
-.slider {
-  position: absolute;
-  cursor: pointer;
-  background-color: #333;
-  border: 1px solid var(--accent);
-  top: 0; left: 0;
-  right: 0; bottom: 0;
-  transition: .4s;
-  border-radius: 22px;
-}
-.slider:before {
-  position: absolute;
-  content: "";
-  height: 16px; width: 16px;
-  left: 3px; bottom: 2px;
-  background-color: var(--accent);
-  transition: .4s;
-  border-radius: 50%;
-}
-input:checked + .slider {
-  background-color: var(--accent);
-}
-input:checked + .slider:before {
-  transform: translateX(22px);
-  background-color: #000;
-}
-.hidden { display: none; }
+#admin-panel{position:absolute;top:10px;right:10px;background:#111;padding:10px;border:2px solid var(--accent);border-radius:6px;color:var(--accent);}
+#admin-panel input{margin-bottom:6px;padding:4px;width:120px;background:#030301;color:var(--accent);border:1px solid var(--accent);}
+#admin-panel button{background:var(--accent);color:#030301;font-weight:700;border:none;padding:4px 8px;cursor:pointer;margin-right:4px;}
+#admin-controls span{margin-left:10px;font-weight:700;}
