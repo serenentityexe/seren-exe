@@ -1,34 +1,39 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Seren.exe — Creepy Terminal</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Seren.exe</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div id="console">
-  <div id="menu"><div id="buy">BUY</div><div id="social-x">X</div></div>
-  <div id="output-wrapper">
-    <div id="lines-container"></div>
+  <div id="terminal">
+    <div id="output"></div>
+    <div id="input-line">
+      <span class="prompt">></span>
+      <input type="text" id="user-input" autocomplete="off" autofocus />
+    </div>
   </div>
-  <div id="input-line">
-    <span>[SEREN.exe@entity ~]$</span>
-    <input id="command" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
-  </div>
-  <div id="system-data"></div>
-</div>
 
-<!-- Admin Panel -->
-<div id="admin-panel" style="display:none;">
-  <input type="password" id="admin-pass" placeholder="Password admin" />
-  <button id="admin-login">Login</button>
-  <div id="admin-controls" style="display:none;">
-    <button id="toggle-game">Toggle Game ON/OFF</button>
-    <span id="game-status"></span>
-  </div>
-</div>
+  <!-- === ADMIN ICON + PANEL === -->
+  <div id="admin-icon">S</div>
 
-<script src="script.js"></script>
+  <div id="admin-panel" class="hidden">
+    <div id="admin-panel-content">
+      <input id="admin-pass" type="password" placeholder="Enter password" />
+      <button id="admin-login">ACCESS</button>
+      <div id="admin-controls" class="hidden">
+        <div class="toggle-wrapper">
+          <span>GAME</span>
+          <label class="switch">
+            <input type="checkbox" id="toggle-game">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
 </body>
 </html>
