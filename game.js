@@ -1,42 +1,31 @@
-if(window.serenGameLoaded) throw new Error("Game already loaded");
-
 window.serenGameLoaded = true;
-enqueueLine("> INITIALIZING GAME MODULE...", false, true);
 
-const levels = [
-  { question: "ANAGRAM: 'RAET'", answer: "TEAR" }, // Livello 1
-  { question: "CIPHER: shift 1 'BCD'", answer: "ABC" } // Livello 2
-];
+// Stato interno del gioco
+window.serenGameState = {
+    currentLevel: 1,
+    maxLevel: 2
+};
 
-let currentLevelIndex = 0;
-const gameProgressKey = 'serenGameProgress';
-let progress = JSON.parse(localStorage.getItem(gameProgressKey)) || { level: 0 };
-currentLevelIndex = progress.level || 0;
+// Gestore input del gioco
+window.serenGameInputHandler = function(input){
+    input = input.trim().toLowerCase();
 
-function showLevel(levelIndex){
-  if(levelIndex >= levels.length){
-    enqueueLine("> YOU HAVE COMPLETED ALL LEVELS! CONGRATULATIONS!", false, true);
-    return;
-  }
-  const level = levels[levelIndex];
-  enqueueLine(`> LEVEL ${levelIndex+1}: ${level.question}`, false, true);
-}
+    const level = window.serenGameState.currentLevel;
 
-// Carica il livello corrente
-showLevel(currentLevelIndex);
-
-// Funzione globale per ricevere input dal terminale
-window.serenGameInputHandler = function(userInput){
-  const answer = userInput.trim().toUpperCase();
-  const level = levels[currentLevelIndex];
-  if(!level) return;
-
-  if(answer === level.answer.toUpperCase()){
-    enqueueLine("> CORRECT!", false, true);
-    currentLevelIndex++;
-    localStorage.setItem(gameProgressKey, JSON.stringify({ level: currentLevelIndex }));
-    showLevel(currentLevelIndex);
-  } else {
-    enqueueLine("> INCORRECT, TRY AGAIN.", false, true);
-  }
+    if(level === 1){
+        if(input === 'seren'){
+            enqueueLine("> LEVEL 1 COMPLETE!", false, true);
+            window.serenGameState.currentLevel = 2;
+            enqueueLine("> LEVEL 2 UNLOCKED: Solve the anagram - 'lpepa'", false, true);
+        } else {
+            enqueueLine("> INCORRECT. TRY AGAIN.", false, true);
+        }
+    } else if(level === 2){
+        if(input === 'apple'){
+            enqueueLine("> LEVEL 2 COMPLETE! GAME END.", false, true);
+            enqueueLine("> YOU HAVE CONQUERED SEREN.EXE", false, true);
+        } else {
+            enqueueLine("> INCORRECT. TRY AGAIN.", false, true);
+        }
+    }
 };
