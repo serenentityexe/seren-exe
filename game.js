@@ -4,9 +4,8 @@ window.serenGameLoaded = true;
 enqueueLine("> INITIALIZING GAME MODULE...", false, true);
 
 const levels = [
-  { question: "ANAGRAM: 'RAET'", answer: "TEAR" },
-  { question: "CIPHER: shift 1 'BCD'", answer: "ABC" },
-  { question: "ANAGRAM: 'NOMUS'", answer: "MUSON" }
+  { question: "ANAGRAM: 'RAET'", answer: "TEAR" }, // Livello 1
+  { question: "CIPHER: shift 1 'BCD'", answer: "ABC" } // Livello 2
 ];
 
 let currentLevelIndex = 0;
@@ -22,6 +21,8 @@ function showLevel(levelIndex){
   const level = levels[levelIndex];
   enqueueLine(`> LEVEL ${levelIndex+1}: ${level.question}`, false, true);
 }
+
+// Carica il livello corrente
 showLevel(currentLevelIndex);
 
 // Funzione globale per ricevere input dal terminale
