@@ -174,41 +174,48 @@ adminLoginBtn.addEventListener('click', ()=>{
   }
 });
 
-// toggle game con spie ON/OFF
-toggleGameBtn.style.position = 'relative';
-toggleGameBtn.style.paddingLeft = '30px';
-toggleGameBtn.style.paddingRight = '30px';
-toggleGameBtn.style.backgroundColor = '#333';
-toggleGameBtn.style.color = '#fff';
-toggleGameBtn.style.fontWeight = '700';
+// --- Admin toggle ON/OFF con spia --- 
+const toggleGameBtn = document.getElementById('toggle-game');
 
-// aggiungi spie rosso/verde
-const led = document.createElement('span');
+// crea spia LED
+let led = document.createElement('span');
 led.style.width = '12px';
 led.style.height = '12px';
 led.style.borderRadius = '50%';
 led.style.display = 'inline-block';
-led.style.position = 'absolute';
-led.style.left = '8px';
-led.style.top = '50%';
-led.style.transform = 'translateY(-50%)';
-led.style.backgroundColor = gameActive?'green':'red';
-toggleGameBtn.appendChild(led);
+led.style.marginRight = '8px';
+led.style.backgroundColor = gameActive ? 'green' : 'red';
+toggleGameBtn.prepend(led);
 
+// funzione per aggiornare spia e testo bottone
+function updateToggleUI() {
+    led.style.backgroundColor = gameActive ? 'green' : 'red';
+    toggleGameBtn.textContent = (gameActive ? 'ON' : 'OFF');
+    toggleGameBtn.prepend(led); // riaggiunge LED
+}
+
+// click toggle
 toggleGameBtn.addEventListener('click', async ()=>{
-  const newState = !gameActive;
-  try{
-    const res = await fetch('/api/updateGameState',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({password:'Seren1987', gameAvailable:newState})
-    });
-    const data = await res.json();
-    if(data.success){
-      gameActive = data.gameAvailable;
-      led.style.backgroundColor = gameActive?'green':'red';
-      enqueueLine(`> GAME STATE SET TO ${gameActive?'ON':'OFF'} BY ADMIN`, false, true);
+    const newState = !gameActive;
+    try{
+        const res = await fetch('/api/updateGameState',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({password:'Seren1987', gameAvailable:newState})
+        });
+        const data = await res.json();
+        if(data.success){
+            gameActive = data.gameAvailable;
+            updateToggleUI();
+            enqueueLine(`> GAME STATE SET TO ${gameActive?'ON':'OFF'} BY ADMIN`, false, true);
+        }
+    } catch(e){
+        console.error(e);
+        enqueueLine("> ERROR TOGGLE FAILED", false, true);
     }
-  } catch(e){ console.error(e); }
 });
+
+// inizializza UI
+updateToggleUI();
+
 
