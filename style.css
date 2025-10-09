@@ -35,7 +35,7 @@ html,body{height:100%;margin:0;background:var(--bg);color:var(--accent);font-fam
 #input-line span{color:var(--accent)}
 #command{flex:1;background:transparent;border:none;outline:none;color:var(--accent);font-family:monospace;font-size:1em;padding:6px 4px;caret-color:var(--accent);}
 #system-data{
-  position:absolute;right:14px;bottom:10px;color:var(--accent);font-family:monospace;font-size:0.95em;text-align:right;opacity:0.95;
+  position:absolute;right:14px;bottom:10px;color:var(--accent);font-family:monospace;font-size:1em;text-align:right;opacity:0.95;
 }
 @keyframes crtJitter {0%{transform:translateY(0)}50%{transform:translateY(-0.6px)}100%{transform:translateY(0)}}
 #lines-container{animation:crtJitter 0.14s infinite}
@@ -43,7 +43,20 @@ html,body{height:100%;margin:0;background:var(--bg);color:var(--accent);font-fam
   #output-wrapper{width:94vw;height:62vh}
   #input-line,#command{width:94vw}
 }
-#admin-panel{position:absolute;top:10px;right:10px;background:#111;padding:10px;border:2px solid var(--accent);border-radius:6px;color:var(--accent);}
+
+/* Admin Panel */
+#admin-panel{
+  position:absolute;top:10px;right:10px;background:#111;padding:10px;border:2px solid var(--accent);border-radius:6px;color:var(--accent);
+}
 #admin-panel input{margin-bottom:6px;padding:4px;width:120px;background:#030301;color:var(--accent);border:1px solid var(--accent);}
 #admin-panel button{background:var(--accent);color:#030301;font-weight:700;border:none;padding:4px 8px;cursor:pointer;margin-right:4px;}
-#admin-controls span{margin-left:10px;font-weight:700;}
+#admin-controls{display:none;margin-top:6px;}
+#admin-icon{cursor:pointer;font-weight:bold;font-size:18px;margin-bottom:4px;}
+
+/* Toggle switch */
+.switch {position: relative; display: inline-block; width: 50px; height: 24px;}
+.switch input { display:none; }
+.slider { position: absolute; cursor: pointer; top:0; left:0; right:0; bottom:0; background-color: #555; transition: .4s; border-radius: 24px; }
+.slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: var(--accent); transition: .4s; border-radius: 50%; }
+input:checked + .slider { background-color: #7f9a71; }
+input:checked + .slider:before { transform: translateX(26px); }
