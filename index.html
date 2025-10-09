@@ -21,16 +21,13 @@
 
 <!-- Admin Panel -->
 <div id="admin-panel">
-  <div id="admin-icon">S</div>
-  <div id="admin-pass-wrapper">
+  <div id="admin-toggle-icon" style="cursor:pointer;">S</div>
+  <div id="admin-form" style="display:none;">
     <input type="password" id="admin-pass" placeholder="Password admin" />
     <button id="admin-login">Login</button>
   </div>
-  <div id="admin-controls">
-    <label class="switch">
-      <input type="checkbox" id="toggle-game">
-      <span class="slider round"></span>
-    </label>
+  <div id="admin-controls" style="display:none;">
+    <button id="toggle-game">Toggle Game ON/OFF</button>
     <span id="game-status"></span>
   </div>
 </div>
