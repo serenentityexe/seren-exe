@@ -94,28 +94,6 @@ function removeOverflowBottom(){
 
 function showHelp(){enqueueLine(HELP_COMMANDS.map(c=>`[${c}]`).join('  '),false,true);}
 
-// --- User data ---
-async function saveUserData(){ 
-  const userData = { level: currentLevel, progressData: gameProgress };
-  try {
-    await fetch('/api/saveUserData', {
-      method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({userId,userData})
-    });
-  } catch(e){ console.error('Errore salvataggio dati utente',e);}
-}
-
-async function loadUserData(){
-  try {
-    const res = await fetch(`/api/getUserData?userId=${userId}`);
-    const data = await res.json();
-    if(data.userData && data.userData.level) { 
-      currentLevel = data.userData.level; 
-      gameProgress = data.userData.progressData || {}; 
-    }
-  } catch(e){ console.error('Errore caricamento dati utente',e);}
-}
-loadUserData();
-
 // --- Command handler ---
 function handleCommandRaw(raw){
   const cmd = (raw||'').trim().toLowerCase();
@@ -134,7 +112,6 @@ function handleCommandRaw(raw){
       if(!gameActive){ enqueueLine("> GAME NOT AVAILABLE. WILL OPEN AT 150k MC.",false,true); break; }
       enqueueLine("> GAME MODULE LOADING...",false,true);
       enqueueLine("> WELCOME TO SEREN.EXE GAME...",false,true);
-      // Carica game.js solo se non già presente
       if(!window.serenGameLoaded){
         const script = document.createElement('script');
         script.src = 'game.js';
@@ -154,13 +131,11 @@ input.addEventListener('keydown',ev=>{
   ev.preventDefault(); 
   const value=input.value; input.value=''; 
 
-  // Se il gioco è attivo e la funzione globale esiste, gestisci input come gioco
   if(gameActive && window.serenGameInputHandler && document.activeElement === input){
     window.serenGameInputHandler(value);
   } else {
     handleCommandRaw(value);
   }
-  saveUserData();
 });
 
 // --- Inactivity ---
@@ -173,14 +148,46 @@ function resetInactivity(){
 resetInactivity();
 
 // --- Glitch effect ---
-setInterval(()=>{
-  document.getElementById('output-wrapper').classList.add('glitch'); 
-  setTimeout(()=>document.getElementById('output-wrapper').classList.remove('glitch'),220);
-},8000);
+setInterval(()=>{document.getElementById('output-wrapper').classList.add('glitch'); setTimeout(()=>document.getElementById('output-wrapper').classList.remove('glitch'),220);},8000);
 
-// --- Polling for typing ---
-function poll(){ 
-  if(!typing&&(oldLinesQueue.length>0||newLinesFixed.length>0)) { typeNewLines(); typeOldLines(); } 
-  requestAnimationFrame(poll);
-}
-poll();
+// --- Admin panel ---
+const adminPanel = document.getElementById('admin-panel');
+const adminIcon = document.getElementById('admin-toggle-icon');
+const adminForm = document.getElementById('admin-form');
+const adminPassInput = document.getElementById('admin-pass');
+const adminLoginBtn = document.getElementById('admin-login');
+const adminControls = document.getElementById('admin-controls');
+const toggleGameBtn = document.getElementById('toggle-game');
+
+// toggle form
+adminIcon.addEventListener('click', ()=>{ adminForm.style.display = adminForm.style.display==='none'?'block':'none'; });
+document.addEventListener('click', (e)=>{ if(!adminPanel.contains(e.target) && adminForm.style.display==='block') adminForm.style.display='none'; });
+
+// admin login
+adminLoginBtn.addEventListener('click', ()=>{
+  if(adminPassInput.value==='Seren1987'){
+    adminControls.style.display='block';
+    adminForm.style.display='none';
+    enqueueLine("> ADMIN LOGGED IN SUCCESSFULLY", false, true);
+  } else {
+    enqueueLine("> INCORRECT PASSWORD", false, true);
+  }
+});
+
+// toggle game
+toggleGameBtn.addEventListener('click', async ()=>{
+  const newState = !gameActive;
+  try{
+    const res = await fetch('/api/updateGameState',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({password:'Seren1987', gameAvailable:newState})
+    });
+    const data = await res.json();
+    if(data.success){
+      gameActive = data.gameAvailable;
+      document.getElementById('game-status').textContent = `Game: ${gameActive?'ON':'OFF'}`;
+      enqueueLine(`> GAME STATE SET TO ${gameActive?'ON':'OFF'} BY ADMIN`, false, true);
+    }
+  } catch(e){ console.error(e); }
+});
