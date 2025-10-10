@@ -2,6 +2,8 @@
 
 // 🔹 Base API endpoint (vercel backend)
 const API_BASE = "https://api-ten-inky-24.vercel.app";
+await fetch(`${API_BASE}/api/game/state`);
+await fetch(`${API_BASE}/api/admin/login`, { ... });
 
 const container = document.getElementById("lines-container");
 const input = document.getElementById("command");
