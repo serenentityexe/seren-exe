@@ -1,26 +1,34 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Seren.exe</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="terminal-container">
-    <div id="terminal">
-      <div class="boot">BOOTING SEREN.EXE...</div>
-    </div>
+  <div id="overlay"></div>
+
+  <!-- Terminale principale -->
+  <div id="terminal">
+    <div id="terminal-output"></div>
     <div id="input-line">
       <span class="prompt">></span>
-      <input type="text" id="commandInput" autocomplete="off" placeholder="type a command..." />
+      <input type="text" id="terminal-input" autocomplete="off" autofocus />
     </div>
+  </div>
 
-    <div id="symbol" title="Admin Panel">●</div>
+  <!-- Admin Panel Trigger -->
+  <div id="admin-trigger"></div>
 
-    <div id="adminPanel" class="hidden">
-      <input type="password" id="adminPassword" placeholder="Enter admin password..." />
-      <button id="adminLogin">Login</button>
+  <!-- Admin Panel -->
+  <div id="admin-panel" class="hidden">
+    <input type="password" id="admin-password" placeholder="Enter admin password">
+    <button id="login-admin">Login</button>
+
+    <div id="toggle-container" class="hidden">
+      <span>Game Status:</span>
+      <button id="toggle-btn" class="off">OFF</button>
     </div>
   </div>
 
