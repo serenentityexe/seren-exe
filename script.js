@@ -293,8 +293,8 @@ toggleGameBtn.addEventListener("click", async () => {
   const newState = !gameActive;
   try {
     await fetch(`${API_BASE}/api/game/state`);
-await fetch(`${API_BASE}/api/admin/login`, { ... });
-
+    await fetch(`${API_BASE}/api/admin/login`, { ... });
+}
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ password: "Seren1987", gameAvailable: newState }),
