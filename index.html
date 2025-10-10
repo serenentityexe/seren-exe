@@ -1,38 +1,104 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Seren.exe — Creepy Terminal</title>
-<link rel="stylesheet" href="style.css">
-</head>
-<body>
-<div id="console">
-  <div id="menu"><div id="buy">BUY</div><div id="social-x">X</div></div>
-  <div id="output-wrapper">
-    <div id="lines-container"></div>
-  </div>
-  <div id="input-line">
-    <span>[SEREN.exe@entity ~]$</span>
-    <input id="command" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
-  </div>
-  <div id="system-data"></div>
-</div>
+body {
+  background-color: black;
+  color: #33ff33;
+  font-family: "Courier New", monospace;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
 
-<!-- Admin Panel -->
-<div id="admin-panel">
-  <div id="admin-toggle-icon">●</div>
-  <div id="admin-password-panel">
-    <input type="password" id="admin-pass" placeholder="Password admin" />
-    <button id="admin-login">Login</button>
-    <div id="admin-controls" style="display:none;">
-      <button id="toggle-game" class="off">OFF</button>
-      <span id="game-status">Game: OFF</span>
-    </div>
-  </div>
-</div>
+#terminal-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 20px;
+  position: relative;
+}
 
-<script src="script.js"></script>
-<script src="game.js"></script>
-</body>
-</html>
+#terminal {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column-reverse;
+  justify-content: flex-start;
+  color: #33ff33;
+}
+
+.boot {
+  color: #ff3;
+  animation: glitch 1s infinite;
+}
+
+#input-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.prompt {
+  color: #33ff33;
+}
+
+#commandInput {
+  background: none;
+  border: none;
+  color: #33ff33;
+  flex: 1;
+  outline: none;
+  font-family: inherit;
+  font-size: 1em;
+}
+
+#symbol {
+  position: absolute;
+  right: 20px;
+  top: 20px;
+  font-size: 22px;
+  cursor: pointer;
+  color: #33ff33;
+  transition: transform 0.2s ease;
+}
+#symbol:hover {
+  transform: scale(1.3);
+  color: #ff3;
+}
+
+#adminPanel {
+  position: absolute;
+  top: 60px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.9);
+  border: 1px solid #33ff33;
+  padding: 10px;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.hidden {
+  display: none;
+}
+
+#adminPanel input,
+#adminPanel button {
+  background: black;
+  color: #33ff33;
+  border: 1px solid #33ff33;
+  padding: 4px;
+  font-family: "Courier New", monospace;
+}
+
+@keyframes glitch {
+  0% { opacity: 1; }
+  50% { opacity: 0.6; transform: skewX(5deg); }
+  100% { opacity: 1; transform: skewX(0deg); }
+}
+
+/* Game Text Types */
+.system { color: #33ff33; }
+.error { color: #f33; }
+.success { color: #3f3; }
+.hint { color: #ff3; }
+.puzzle { color: #3ff; }
