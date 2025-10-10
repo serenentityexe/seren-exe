@@ -1,45 +1,49 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Seren.exe — Creepy Terminal</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Seren.exe — Creepy Terminal</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div id="console">
-  <div id="menu"><div id="buy">BUY</div><div id="social-x">X</div></div>
-  <div id="output-wrapper">
-    <div id="lines-container"></div>
-  </div>
-  <div id="input-line">
-    <span>[SEREN.exe@entity ~]$</span>
-    <input id="command" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
-  </div>
-  <div id="system-data"></div>
-</div>
+  <div id="console">
+    <div id="menu"><div id="buy">BUY</div><div id="social-x">X</div></div>
 
-<!-- Icona Admin -->
-<div id="admin-icon">S</div>
+    <div id="output-wrapper">
+      <div id="lines-container"></div>
+    </div>
 
-<!-- Admin Panel -->
-<div id="admin-panel" style="display:none;">
-  <input type="password" id="admin-pass" placeholder="Password admin" />
-  <button id="admin-login">Login</button>
-  <div id="admin-controls" style="display:none;">
-    <div id="toggle-container">
-      <span>OFF</span>
-      <label class="switch">
-        <input type="checkbox" id="toggle-game">
-        <span class="slider"></span>
-      </label>
-      <span>ON</span>
-      <span id="game-status"></span>
+    <div id="input-line">
+      <span>[SEREN.exe@entity ~]$</span>
+      <input id="command" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+    </div>
+
+    <div id="system-data"></div>
+  </div>
+
+  <!-- Admin Icon and Panel -->
+  <div id="admin-icon">S</div>
+
+  <div id="admin-panel" aria-hidden="true">
+    <input type="password" id="admin-pass" placeholder="Admin password" />
+    <button id="admin-login">Login</button>
+
+    <div id="admin-controls" style="display:none; margin-top:8px;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-weight:700">OFF</span>
+        <label class="switch">
+          <input type="checkbox" id="toggle-game" />
+          <span class="slider"></span>
+        </label>
+        <span style="font-weight:700">ON</span>
+        <span id="game-status" style="margin-left:10px;font-weight:700"></span>
+      </div>
     </div>
   </div>
-</div>
 
-<script src="script.js"></script>
-<script src="game.js"></script>
+  <!-- load game module first (defines startGame & handler), then main logic -->
+  <script src="game.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
