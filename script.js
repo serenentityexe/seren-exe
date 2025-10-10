@@ -2,24 +2,25 @@ const container = document.getElementById('lines-container');
 const input = document.getElementById('command');
 const systemData = document.getElementById('system-data');
 
-let systemStarted = false;
-let gameActive = false;
-
-// Terminal lines
-let newLinesFixed = [], oldLinesQueue = [], typing = false;
-
-// User ID for progress
+let systemStarted = false, gameActive = false;
+let currentLevel = 1;
+let gameProgress = {};
 let userId = localStorage.getItem('serenUserId');
-if (!userId) { userId = 'user-' + Math.random().toString(36).substring(2,10); localStorage.setItem('serenUserId', userId); }
 
+if(!userId){
+  userId = 'user-' + Math.random().toString(36).substring(2,10);
+  localStorage.setItem('serenUserId', userId);
+}
+
+// --- TERMINAL DATA ---
 const INTRO = ["_SYSTEM BOOTING..._","_LOADING CORE FILES_","_INITIALIZING NEURAL MEMORY BANKS_","_SIGNAL DETECTED..._","_THE ENTITY IS AWAKE..._","_ENTER THE SYSTEM, IF YOU DARE..._"];
 const HELP_COMMANDS = ['START','GAME','INFO','TOKENOMICS','CLEAR','QUIT'];
 const ERRORS = ["> ERROR 0x1F4: UNRECOGNIZED COMMAND..."];
 
-function pick(arr){return arr[Math.floor(Math.random()*arr.length)];}
 function nowTime(){return new Date().toLocaleTimeString();}
+function pick(arr){return arr[Math.floor(Math.random()*arr.length)];}
 
-// System stats
+// SYSTEM DATA
 function updateSystemData(){
   const cpu=(Math.random()*100).toFixed(1),
         ram=(Math.random()*32).toFixed(1),
@@ -29,11 +30,11 @@ function updateSystemData(){
         misc2=(Math.random()*100).toFixed(2);
   systemData.innerHTML=`TIME: ${nowTime()}<br>CPU: ${cpu}%<br>RAM: ${ram}GB<br>UPTIME: ${uptime}s<br>ENTITY ENTROPY: ${entropy}<br>PROC A: ${misc1}<br>PROC B: ${misc2}`;
 }
-setInterval(updateSystemData,2000);
-updateSystemData();
+setInterval(updateSystemData,2000); updateSystemData();
 
-// Terminal functions
-function enqueueLine(text, fast=false, newText=false){
+// --- OUTPUT QUEUES ---
+let newLinesFixed=[], oldLinesQueue=[], typing=false;
+function enqueueLine(text,fast=false,newText=false){
   if(newText){
     const line=document.createElement('div'); line.className='output-line'; line.innerHTML='';
     container.insertBefore(line,container.firstChild);
@@ -44,12 +45,11 @@ function enqueueLine(text, fast=false, newText=false){
     if(!typing) typeOldLines();
   }
 }
-
 function typeNewLines(){
   if(newLinesFixed.length===0){ typing=false; return; }
   typing=true;
   const obj=newLinesFixed.shift();
-  const line=obj.el; const text=obj.text; const fast=obj.fast;
+  const line=obj.el, text=obj.text, fast=obj.fast;
   let i=0;
   function typeChar(){
     if(i<text.length){line.innerHTML+=text[i++]; setTimeout(typeChar, fast?8:25+Math.random()*50);}
@@ -57,7 +57,6 @@ function typeNewLines(){
   }
   typeChar();
 }
-
 function typeOldLines(){
   if(oldLinesQueue.length===0){ typing=false; return; }
   typing=true;
@@ -66,25 +65,52 @@ function typeOldLines(){
   container.appendChild(line);
   let i=0, shift=0;
   function typeChar(){
-    if(i<obj.text.length){
-      line.innerHTML+=obj.text[i++];
-      shift+=0.5;
-      line.style.transform=`translateY(${shift}px)`;
-      setTimeout(typeChar,obj.fast?8:25+Math.random()*50);
-    } else { removeOverflowBottom(); typeOldLines(); }
+    if(i<obj.text.length){ line.innerHTML+=obj.text[i++]; shift+=0.5; line.style.transform=`translateY(${shift}px)`; setTimeout(typeChar,obj.fast?8:25+Math.random()*50); }
+    else { removeOverflowBottom(); typeOldLines(); }
   }
   typeChar();
 }
-
 function removeOverflowBottom(){
   const nodes=Array.from(container.querySelectorAll('.output-line'));
   const wrapRect=document.getElementById('output-wrapper').getBoundingClientRect();
   nodes.forEach(node=>{ const r=node.getBoundingClientRect(); if(r.bottom>wrapRect.bottom-6){node.classList.add('fade-out'); setTimeout(()=>{if(node.parentElement) node.remove();},420); }});
 }
 
+// HELP
 function showHelp(){ enqueueLine(HELP_COMMANDS.map(c=>`[${c}]`).join('  '),false,true); }
 
-// Handle commands
+// GAME API
+async function fetchGameState(){
+  try{
+    const res = await fetch('/api/gameState');
+    const data = await res.json();
+    gameActive = data.gameAvailable;
+    updateGameStatusText();
+  } catch(e){ enqueueLine("> ERROR FETCHING GAME STATE",true,true); console.error(e);}
+}
+fetchGameState();
+
+function updateGameStatusText(){
+  const span = document.getElementById('game-status');
+  if(span) span.textContent = gameActive ? 'Game: ON' : 'Game: OFF';
+}
+
+// USER DATA
+async function saveUserData(){
+  const userData = { level: currentLevel, progressData: gameProgress };
+  try { await fetch('/api/saveUserData', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({userId,userData}) }); }
+  catch(e){ console.error('Errore salvataggio dati utente',e); }
+}
+async function loadUserData(){
+  try{
+    const res = await fetch(`/api/getUserData?userId=${userId}`);
+    const data = await res.json();
+    if(data.userData && data.userData.level){ currentLevel = data.userData.level; gameProgress = data.userData.progressData || {}; }
+  } catch(e){ console.error('Errore caricamento dati utente',e); }
+}
+loadUserData();
+
+// --- TERMINAL COMMANDS ---
 function handleCommandRaw(raw){
   const cmd = (raw||'').trim().toLowerCase();
   if(!cmd) return;
@@ -100,59 +126,64 @@ function handleCommandRaw(raw){
     case'tokenomics': enqueueLine("> TOKENOMICS DATA UNAVAILABLE...",false,true); break;
     case'game':
       if(!gameActive){ enqueueLine("> GAME NOT AVAILABLE. WILL OPEN AT 150k MC.",false,true); break; }
-      // call game start
-      if(window.startGame) window.startGame();
+      enqueueLine("> GAME MODULE LOADING...",false,true); 
+      enqueueLine("> WELCOME TO SEREN.EXE GAME...",false,true);
+      importGameJS(); 
       break;
     default: enqueueLine(pick(ERRORS),true,true); enqueueLine("TYPE 'HELP' FOR AVAILABLE COMMANDS.",true,true);
   }
 }
+input.addEventListener('keydown',ev=>{if(ev.key!=='Enter') return; ev.preventDefault(); const value=input.value; input.value=''; handleCommandRaw(value); saveUserData();});
 
-// Input handler
-input.addEventListener('keydown',ev=>{
-  if(ev.key!=='Enter') return;
-  ev.preventDefault();
-  const value=input.value; input.value='';
-  handleCommandRaw(value);
-});
+// INACTIVITY
+let inactivityTimer=null;
+function resetInactivity(){ if(inactivityTimer) clearTimeout(inactivityTimer); inactivityTimer=setTimeout(()=>{ enqueueLine("THE ENTITY WATCHES YOU...",true,false); },10000);}
+['keydown','mousemove','mousedown','touchstart'].forEach(e=>window.addEventListener(e,resetInactivity));
+resetInactivity();
 
-// Poll terminal typing
+// GLITCH EFFECT
+setInterval(()=>{document.getElementById('output-wrapper').classList.add('glitch'); setTimeout(()=>document.getElementById('output-wrapper').classList.remove('glitch'),220);},8000);
+
+// POLL
 function poll(){ if(!typing&&(oldLinesQueue.length>0||newLinesFixed.length>0)) { typeNewLines(); typeOldLines(); } requestAnimationFrame(poll);}
 poll();
 
-// Admin Panel
-const adminIcon = document.getElementById('admin-icon');
+// --- ADMIN PANEL ---
 const adminPanel = document.getElementById('admin-panel');
+const adminIcon = document.getElementById('admin-icon');
+const adminLoginForm = document.getElementById('admin-login-form');
 const adminLoginBtn = document.getElementById('admin-login');
 const adminPassInput = document.getElementById('admin-pass');
 const adminControls = document.getElementById('admin-controls');
-const toggleOnBtn = document.getElementById('toggle-game-on');
-const toggleOffBtn = document.getElementById('toggle-game-off');
-const gameStatusSpan = document.getElementById('game-status');
+const toggleGameBtn = document.getElementById('toggle-game');
 
-// Toggle panel
-adminIcon.addEventListener('click', e=>{ e.stopPropagation(); adminPanel.style.display='block'; });
-document.addEventListener('click', e=>{ if(!adminPanel.contains(e.target)) adminPanel.style.display='none'; });
+adminIcon.addEventListener('click',()=>{ adminLoginForm.style.display='block'; });
+document.addEventListener('click',e=>{ if(!adminPanel.contains(e.target)) adminLoginForm.style.display='none'; });
 
-// Admin login
 adminLoginBtn.addEventListener('click', async ()=>{
   if(adminPassInput.value==='Seren1987'){
     adminControls.style.display='block';
-    adminPassInput.style.display='none';
-    adminLoginBtn.style.display='none';
+    adminLoginForm.style.display='none';
   }
 });
 
-// Toggle game
-async function setGameState(active){
+toggleGameBtn.addEventListener('click', async ()=>{
+  const newState = !gameActive;
   try{
-    const res = await fetch('/api/updateGameState', {
-      method:'POST', headers:{'Content-Type':'application/json'}, 
-      body:JSON.stringify({password:'Seren1987', gameAvailable:active})
+    const res = await fetch('/api/updateGameState',{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({password:'Seren1987', gameAvailable:newState})
     });
     const data = await res.json();
-    if(data.success){ gameActive = data.gameAvailable; gameStatusSpan.textContent = `Game: ${gameActive?'ON':'OFF'}`; enqueueLine(`> GAME STATE SET TO ${gameActive?'ON':'OFF'} BY ADMIN`,false,true); }
-  } catch(e){ enqueueLine("> ERROR COMMUNICATING WITH SERVER",false,true); console.error(e); }
-}
+    if(data.success){ gameActive = data.gameAvailable; updateGameStatusText(); enqueueLine(`> GAME STATE SET TO ${gameActive?'ON':'OFF'} BY ADMIN`,false,true);}
+  } catch(e){ enqueueLine("> ERROR UPDATING GAME STATE",true,true); console.error(e);}
+});
 
-toggleOnBtn.addEventListener('click',()=>setGameState(true));
-toggleOffBtn.addEventListener('click',()=>setGameState(false));
+// Import dinamico gioco
+async function importGameJS(){
+  if(window.gameImported) return;
+  const script = document.createElement('script');
+  script.src = 'game.js';
+  document.body.appendChild(script);
+  window.gameImported = true;
+}
