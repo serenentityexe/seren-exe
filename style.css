@@ -1,140 +1,38 @@
-:root{
-  --accent:#7f9a71;
-  --bg:#030301;
-  --frame-shadow:rgba(127,154,113,0.06);
-}
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Seren.exe — Creepy Terminal</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="console">
+  <div id="menu"><div id="buy">BUY</div><div id="social-x">X</div></div>
+  <div id="output-wrapper">
+    <div id="lines-container"></div>
+  </div>
+  <div id="input-line">
+    <span>[SEREN.exe@entity ~]$</span>
+    <input id="command" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+  </div>
+  <div id="system-data"></div>
+</div>
 
-html,body{
-  height:100%;
-  margin:0;
-  background:var(--bg);
-  color:var(--accent);
-  font-family:"Courier New",monospace;
-  overflow:hidden;
-}
+<!-- Admin Panel -->
+<div id="admin-panel">
+  <div id="admin-toggle-icon">●</div>
+  <div id="admin-password-panel" style="display:none;">
+    <input type="password" id="admin-pass" placeholder="Password admin" />
+    <button id="admin-login">Login</button>
+    <div id="admin-controls" style="display:none;">
+      <button id="toggle-game">ON</button>
+      <span id="game-status">Game: OFF</span>
+    </div>
+  </div>
+</div>
 
-#console{
-  height:100vh;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  position:relative;
-  padding:18px;
-}
-
-#menu{
-  position:absolute;
-  left:18px;
-  top:12px;
-  display:flex;
-  gap:14px;
-  font-weight:700;
-  opacity:0.95;
-}
-#menu>div{ cursor:pointer; user-select:none }
-
-#output-wrapper{
-  width:860px;
-  height:560px;
-  position:relative;
-  border:3px solid rgba(127,154,113,0.32);
-  border-radius:8px;
-  box-shadow: inset 0 0 30px var(--frame-shadow);
-  background:linear-gradient(180deg,#020201 0%, #060604 100%);
-  overflow:hidden;
-}
-
-#lines-container{
-  position:absolute;
-  top:10px;
-  left:10px;
-  right:10px;
-  display:flex;
-  flex-direction:column;
-  gap:4px;
-}
-
-.output-line{
-  color:var(--accent);
-  white-space:pre-wrap;
-  line-height:1.6em;
-  letter-spacing:0.9px;
-  font-size:1em;
-  opacity:1;
-  transition:opacity 0.6s ease, transform 0.4s ease;
-}
-
-.fade-out{ opacity:0 !important; transform: translateY(4px); }
-
-#input-line{
-  margin-top:12px;
-  display:flex;
-  align-items:center;
-  gap:8px;
-  width:860px;
-  justify-content:flex-start;
-  font-weight:700;
-  position:relative;
-}
-
-#input-line span{ color:var(--accent) }
-
-#command{
-  flex:1;
-  background:transparent;
-  border:none;
-  outline:none;
-  color:var(--accent);
-  font-family:monospace;
-  font-size:1em;
-  padding:6px 4px;
-  caret-color:var(--accent);
-}
-
-#system-data{
-  position:absolute;
-  right:14px;
-  bottom:10px;
-  color:var(--accent);
-  font-family:monospace;
-  font-size:1.1em;
-  text-align:right;
-  opacity:0.95;
-}
-
-@keyframes crtJitter {
-  0%{transform:translateY(0)}
-  50%{transform:translateY(-0.6px)}
-  100%{transform:translateY(0)}
-}
-#lines-container{ animation:crtJitter 0.14s infinite }
-
-@media (max-width:940px){
-  #output-wrapper{ width:94vw; height:62vh }
-  #input-line,#command{ width:94vw }
-}
-
-/* Admin panel styles */
-#admin-pass-wrapper input{
-  margin-bottom:6px;
-  padding:4px;
-  width:120px;
-  background:#030301;
-  color:var(--accent);
-  border:1px solid var(--accent);
-}
-
-#admin-pass-wrapper button{
-  background:var(--accent);
-  color:#030301;
-  font-weight:700;
-  border:none;
-  padding:4px 8px;
-  cursor:pointer;
-  margin-right:4px;
-}
-
-#admin-controls span{
-  margin-left:10px;
-  font-weight:700;
-}
+<script src="script.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
