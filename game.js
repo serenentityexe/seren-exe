@@ -1,25 +1,27 @@
-// 2 livelli di prova
-window.startGame = function(){
-  enqueueLine("> GAME MODULE LOADING...",false,true);
-  enqueueLine("> WELCOME TO SEREN.EXE GAME...",false,true);
-  // Livello 1
-  enqueueLine("[LEVEL 1] Solve: ANAGRAM OF 'SEREN' => ? (Type answer)",false,true);
-  const level1Handler = e=>{
-    if(e.key!=='Enter') return;
-    const ans = input.value.trim().toLowerCase(); input.value='';
-    if(ans==='seren'){ enqueueLine("> LEVEL 1 COMPLETED",false,true); window.removeEventListener('keydown',level1Handler); level2(); }
-    else enqueueLine("> WRONG ANSWER, TRY AGAIN",false,true);
-  };
-  window.addEventListener('keydown',level1Handler);
-};
+function startGame(level=1, progress={}){
+  enqueueLine(`> STARTING GAME AT LEVEL ${level}...`, false, true);
 
-function level2(){
-  enqueueLine("[LEVEL 2] Solve: ANAGRAM OF 'ENTITY' => ?",false,true);
-  const level2Handler = e=>{
-    if(e.key!=='Enter') return;
-    const ans = input.value.trim().toLowerCase(); input.value='';
-    if(ans==='entity'){ enqueueLine("> LEVEL 2 COMPLETED",false,true); window.removeEventListener('keydown',level2Handler); enqueueLine("> GAME SESSION COMPLETE",false,true);}
-    else enqueueLine("> WRONG ANSWER, TRY AGAIN",false,true);
+  const levels = {
+    1: { puzzle: "ANAGRAM: Reorder letters 'ENRSE'", answer: "SEREN" },
+    2: { puzzle: "CIPHER: ROT1 'UFTU'", answer: "TEST" }
   };
-  window.addEventListener('keydown',level2Handler);
+
+  if(!levels[level]) { enqueueLine("> GAME COMPLETE. CONGRATS!", false, true); return; }
+
+  const current = levels[level];
+  enqueueLine(`> PUZZLE LEVEL ${level}: ${current.puzzle}`, false, true);
+
+  input.addEventListener('keydown', function listener(e){
+    if(e.key!=='Enter') return;
+    e.preventDefault();
+    const val = input.value.trim().toUpperCase(); input.value='';
+    if(val===current.answer){
+      enqueueLine("> CORRECT! ADVANCING...", false, true);
+      currentLevel++;
+      input.removeEventListener('keydown', listener);
+      startGame(currentLevel, progress);
+    } else {
+      enqueueLine("> WRONG. TRY AGAIN.", false, true);
+    }
+  });
 }
