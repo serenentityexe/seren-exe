@@ -1,38 +1,38 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Seren.exe</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Seren.exe — Creepy Terminal</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="overlay"></div>
-
-  <!-- Terminale principale -->
-  <div id="terminal">
-    <div id="terminal-output"></div>
-    <div id="input-line">
-      <span class="prompt">></span>
-      <input type="text" id="terminal-input" autocomplete="off" autofocus />
-    </div>
+<div id="console">
+  <div id="menu"><div id="buy">BUY</div><div id="social-x">X</div></div>
+  <div id="output-wrapper">
+    <div id="lines-container"></div>
   </div>
-
-  <!-- Admin Panel Trigger -->
-  <div id="admin-trigger"></div>
-
-  <!-- Admin Panel -->
-  <div id="admin-panel" class="hidden">
-    <input type="password" id="admin-password" placeholder="Enter admin password">
-    <button id="login-admin">Login</button>
-
-    <div id="toggle-container" class="hidden">
-      <span>Game Status:</span>
-      <button id="toggle-btn" class="off">OFF</button>
-    </div>
+  <div id="input-line">
+    <span>[SEREN.exe@entity ~]$</span>
+    <input id="command" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
   </div>
+  <div id="system-data"></div>
+</div>
 
-  <script src="script.js"></script>
-  <script src="game.js"></script>
+<!-- Admin Icon -->
+<div id="admin-icon">S</div>
+<!-- Admin Panel -->
+<div id="admin-panel" style="display:none;">
+  <input type="password" id="admin-pass" placeholder="Password admin" />
+  <button id="admin-login">Login</button>
+  <div id="admin-controls" style="display:none;">
+    <button id="toggle-game-on">ON</button>
+    <button id="toggle-game-off">OFF</button>
+    <span id="game-status">Game: OFF</span>
+  </div>
+</div>
+
+<script type="module" src="game.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
