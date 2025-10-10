@@ -1,78 +1,105 @@
-import { startGame } from './game.js';
-
 const container = document.getElementById('lines-container');
 const input = document.getElementById('command');
 const systemData = document.getElementById('system-data');
+
+let systemStarted = false, gameActive = false;
+let currentLevel = 1;
+let gameProgress = {};
+
 const adminIcon = document.getElementById('admin-icon');
 const adminPanel = document.getElementById('admin-panel');
 const adminLoginBtn = document.getElementById('admin-login');
 const adminPassInput = document.getElementById('admin-pass');
 const adminControls = document.getElementById('admin-controls');
-const toggleGameBtn = document.getElementById('toggle-game');
-const gameStatusSpan = document.getElementById('game-status');
+const toggleGameCheckbox = document.getElementById('toggle-game');
+const gameStatus = document.getElementById('game-status');
 
-let systemStarted=false, gameActive=false;
-let currentLevel=1, gameProgress={};
-let userId = localStorage.getItem('serenUserId');
-if(!userId){ userId='user-'+Math.random().toString(36).substring(2,10); localStorage.setItem('serenUserId', userId); }
+// === ICONA ADMIN OPEN/CLOSE ===
+adminIcon.addEventListener('click', e => {
+  e.stopPropagation();
+  adminPanel.style.display = adminPanel.style.display === 'block' ? 'none' : 'block';
+});
+document.addEventListener('click', e => {
+  if (!adminPanel.contains(e.target) && e.target !== adminIcon)
+    adminPanel.style.display = 'none';
+});
+adminPanel.addEventListener('click', e => e.stopPropagation());
 
-const INTRO=["_SYSTEM BOOTING..._","_LOADING CORE FILES_","_INITIALIZING NEURAL MEMORY BANKS_","_SIGNAL DETECTED..._","_THE ENTITY IS AWAKE..._","_ENTER THE SYSTEM, IF YOU DARE..._"];
-const HELP_COMMANDS=['START','GAME','INFO','TOKENOMICS','CLEAR','QUIT'];
-const ERRORS=["> ERROR 0x1F4: UNRECOGNIZED COMMAND..."];
-
-function nowTime(){ return new Date().toLocaleTimeString(); }
-function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
-
-function enqueueLine(text, fast=false, newText=false){
-  if(newText){
-    const line=document.createElement('div'); line.className='output-line'; line.innerHTML='';
-    container.insertBefore(line,container.firstChild);
-    newLinesFixed.push({el:line,text,fast});
-    if(!typing) typeNewLines();
-  } else {
-    oldLinesQueue.push({text,fast});
-    if(!typing) typeOldLines();
+// === ADMIN LOGIN ===
+adminLoginBtn.addEventListener('click', async ()=>{
+  if(adminPassInput.value==='Seren1987'){
+    adminControls.style.display='block';
+    adminPassInput.style.display='none';
+    adminLoginBtn.style.display='none';
   }
-}
+});
 
-let newLinesFixed=[], oldLinesQueue=[], typing=false;
-
-function typeNewLines(){ /* implementazione identica a prima */ }
-function typeOldLines(){ /* implementazione identica a prima */ }
-function removeOverflowBottom(){ /* implementazione identica a prima */ }
-
-function showHelp(){ enqueueLine(HELP_COMMANDS.map(c=>`[${c}]`).join('  '), false, true); }
-
-async function fetchGameState(){
-  try{
+// === FETCH GAME STATE ===
+async function fetchGameState() {
+  try {
     const res = await fetch('/api/gameState');
     const data = await res.json();
     gameActive = data.gameAvailable;
-    updateGameStatusText();
-  } catch(e){ console.error(e); }
+    toggleGameCheckbox.checked = gameActive;
+    gameStatus.textContent = gameActive ? 'Game: ON' : 'Game: OFF';
+  } catch(e){ console.error('Errore fetch game state',e); }
 }
 fetchGameState();
 
-function updateGameStatusText(){ if(gameStatusSpan) gameStatusSpan.textContent=gameActive?'Game ON':'Game OFF'; }
+// === TOGGLE HANDLER ===
+toggleGameCheckbox.addEventListener('change', async ()=>{
+  const newState = toggleGameCheckbox.checked;
+  try {
+    const res = await fetch('/api/updateGameState', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({password:'Seren1987', gameAvailable:newState})
+    });
+    const data = await res.json();
+    if(data.success){
+      gameActive = data.gameAvailable;
+      gameStatus.textContent = gameActive ? 'Game: ON' : 'Game: OFF';
+      enqueueLine(`> GAME STATE SET TO ${gameActive?'ON':'OFF'} BY ADMIN`,false,true);
+    } else enqueueLine('> ERROR: AUTH FAILED',true,true);
+  } catch(e){ enqueueLine('> ERROR: SERVER COMMUNICATION FAILED',true,true); }
+});
 
-async function saveUserData(){ /* identico a prima */ }
-async function loadUserData(){ /* identico a prima */ }
-loadUserData();
+// === TERMINAL ===
+function enqueueLine(text, fast=false, newText=false){
+  const line=document.createElement('div');
+  line.className='output-line';
+  line.innerHTML='';
+  if(newText) container.insertBefore(line,container.firstChild);
+  else container.appendChild(line);
+  let i=0; function type(){ if(i<text.length){ line.innerHTML+=text[i++]; setTimeout(type, fast?8:25+Math.random()*30); } }
+  type();
+}
 
 function handleCommandRaw(raw){
-  const cmd=(raw||'').trim().toLowerCase();
+  const cmd = (raw||'').trim().toLowerCase();
   if(!cmd) return;
-  if(cmd==='help'){ showHelp(); return; }
-  if(cmd==='start'){ systemStarted=true; INTRO.forEach(t=>enqueueLine(t,false,true)); return; }
-  if(cmd==='clear'){ container.innerHTML=''; newLinesFixed=[]; oldLinesQueue=[]; return; }
+  if(cmd==='start'){ systemStarted=true; enqueueLine("_SYSTEM READY_",false,true); return; }
+  if(cmd==='clear'){ container.innerHTML=''; return; }
   if(cmd==='quit'){ enqueueLine("> SYSTEM EXITING...",false,true); return; }
 
-  if(!systemStarted){ enqueueLine(pick(ERRORS),true,true); enqueueLine("TYPE 'START' TO INITIALIZE.",true,true); return; }
+  if(!systemStarted){ enqueueLine("> SYSTEM NOT INITIALIZED — TYPE START",true,true); return; }
 
   switch(cmd){
-    case'info': enqueueLine("_ENTITY ID: SEREN.EXE_",false,true); break;
-    case'tokenomics': enqueueLine("> TOKENOMICS DATA UNAVAILABLE...",false,true); break;
-    case'game':
+    case 'info': enqueueLine("_ENTITY ID: SEREN.EXE_",false,true); break;
+    case 'tokenomics': enqueueLine("> TOKENOMICS UNAVAILABLE",false,true); break;
+    case 'game':
       if(!gameActive){ enqueueLine("> GAME NOT AVAILABLE. WILL OPEN AT 150k MC.",false,true); break; }
-      enqueueLine("> GAME MODULE LOADING...",false,true);
-      enqueueLine("> WELCOME TO SER
+      startGame();
+      break;
+    default:
+      enqueueLine("> UNKNOWN COMMAND",true,true);
+  }
+}
+
+input.addEventListener('keydown',ev=>{
+  if(ev.key!=='Enter') return;
+  ev.preventDefault();
+  const value=input.value;
+  input.value='';
+  handleCommandRaw(value);
+});
