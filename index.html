@@ -20,19 +20,18 @@
 </div>
 
 <!-- Admin Panel -->
-<div id="admin-panel">
+<div id="admin-panel" style="display:none;">
   <div id="admin-icon">S</div>
-  <div id="admin-login-form" style="display:none;">
+  <div id="admin-form" style="display:none;">
     <input type="password" id="admin-pass" placeholder="Password admin" />
     <button id="admin-login">Login</button>
-    <div id="admin-controls" style="display:none;">
-      <button id="toggle-game">Toggle Game</button>
-      <span id="game-status"></span>
-    </div>
+  </div>
+  <div id="admin-controls" style="display:none;">
+    <button id="toggle-game">Toggle Game</button>
+    <span id="game-status"></span>
   </div>
 </div>
 
-<script src="script.js"></script>
-<script src="game.js"></script>
+<script type="module" src="script.js"></script>
 </body>
 </html>
