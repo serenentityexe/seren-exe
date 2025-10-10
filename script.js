@@ -105,6 +105,28 @@ async function fetchGameState() {
     updateGameStatusText(); 
   } catch(e){ 
     console.error("> ERROR FETCHING GAME STATE", e);
+    enqueueLine("> ERROR FETCHING GAME STATE: SERVER NOT REACHABLE", true, true);
+  }
+}
+
+async function toggleGameState(state){
+  try{
+    const res = await fetch('/api/updateGameState', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ password:'Seren1987', gameAvailable:state })
+    });
+    const data = await res.json();
+    if(data.success){
+      gameActive = data.gameAvailable;
+      updateGameStatusText();
+      enqueueLine(`> GAME STATE SET TO ${gameActive?'ON':'OFF'} BY ADMIN`, false, true);
+    } else {
+      enqueueLine("> ERROR: FAILED TO UPDATE GAME STATE", false, true);
+    }
+  } catch(e){ 
+    console.error("> ERROR COMMUNICATING WITH SERVER", e);
+    enqueueLine("> ERROR COMMUNICATING WITH SERVER", true, true);
   }
 }
 
@@ -127,7 +149,10 @@ async function loadUserData(){
 
 function updateGameStatusText(){
   const span = document.getElementById('game-status');
-  if(span) span.textContent = gameActive ? 'Game: ON' : 'Game: OFF';
+  if(span){
+    span.textContent = gameActive ? 'Game: ON' : 'Game: OFF';
+    span.style.color = gameActive ? 'lime' : 'red';
+  }
 }
 
 fetchGameState();
@@ -173,49 +198,47 @@ input.addEventListener('keydown',ev=>{
   saveUserData();
 });
 
-// ----------------- Inactivity -----------------
-let inactivityTimer=null;
-function resetInactivity(){ 
-  if(inactivityTimer) clearTimeout(inactivityTimer); 
-  inactivityTimer=setTimeout(()=>{ enqueueLine("THE ENTITY WATCHES YOU...",true,false); },10000);
-}
-['keydown','mousemove','mousedown','touchstart'].forEach(e=>window.addEventListener(e,resetInactivity));
-resetInactivity();
-
-// ----------------- Poll & Glitch -----------------
-setInterval(()=>{document.getElementById('output-wrapper').classList.add('glitch'); setTimeout(()=>document.getElementById('output-wrapper').classList.remove('glitch'),220);},8000);
-function poll(){ if(!typing&&(oldLinesQueue.length>0||newLinesFixed.length>0)) { typeNewLines(); typeOldLines(); } requestAnimationFrame(poll);}
-poll();
-
 // ----------------- Admin Panel -----------------
 const adminPanel = document.getElementById('admin-panel');
 const adminLoginBtn = document.getElementById('admin-login');
 const adminPassInput = document.getElementById('admin-pass');
 const adminControls = document.getElementById('admin-controls');
 const toggleGameBtn = document.getElementById('toggle-game');
+const adminIcon = document.createElement('div');
 
-adminPanel.style.display='block';
+adminIcon.textContent = 'S';
+adminIcon.style.cursor = 'pointer';
+adminIcon.style.fontWeight = '700';
+adminIcon.style.position = 'absolute';
+adminIcon.style.top = '10px';
+adminIcon.style.right = '10px';
+adminIcon.style.color = 'var(--accent)';
+document.body.appendChild(adminIcon);
+
+adminPanel.style.display='none';
+
+// Toggle admin panel with icon
+adminIcon.addEventListener('click', (e)=>{
+  e.stopPropagation();
+  adminPanel.style.display = adminPanel.style.display==='block' ? 'none' : 'block';
+});
+
+// Close admin panel if click outside
+document.addEventListener('click', (e)=>{
+  if(!adminPanel.contains(e.target) && e.target!==adminIcon){
+    adminPanel.style.display='none';
+  }
+});
 
 adminLoginBtn.addEventListener('click', async ()=>{
   if(adminPassInput.value==='Seren1987'){
-    adminControls.style.display='block';
+    adminControls.style.display='flex';
     adminPassInput.style.display='none'; 
     adminLoginBtn.style.display='none';
   }
 });
 
+// Toggle ON/OFF
 toggleGameBtn.addEventListener('click', async ()=>{
-  const newState = !gameActive;
-  try{
-    const res = await fetch('/api/updateGameState', {
-      method:'POST', headers:{'Content-Type':'application/json'}, 
-      body:JSON.stringify({password:'Seren1987', gameAvailable:newState})
-    });
-    const data = await res.json();
-    if(data.success){ 
-      gameActive = data.gameAvailable; 
-      updateGameStatusText(); 
-      enqueueLine(`> GAME STATE SET TO ${gameActive?'ON':'OFF'} BY ADMIN`,false,true); 
-    }
-  } catch(e){ console.error("> ERROR UPDATING GAME STATE", e); }
+  await toggleGameState(!gameActive);
 });
