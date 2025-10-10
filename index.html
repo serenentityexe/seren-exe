@@ -7,7 +7,6 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
 <div id="console">
   <div id="menu"><div id="buy">BUY</div><div id="social-x">X</div></div>
   <div id="output-wrapper">
@@ -20,21 +19,27 @@
   <div id="system-data"></div>
 </div>
 
-<!-- Admin icon -->
+<!-- Icona Admin -->
 <div id="admin-icon">S</div>
 
 <!-- Admin Panel -->
-<div id="admin-panel">
+<div id="admin-panel" style="display:none;">
   <input type="password" id="admin-pass" placeholder="Password admin" />
   <button id="admin-login">Login</button>
-  <div id="admin-controls">
-    <button id="toggle-game">Toggle Game ON/OFF</button>
-    <span id="game-status"></span>
+  <div id="admin-controls" style="display:none;">
+    <div id="toggle-container">
+      <span>OFF</span>
+      <label class="switch">
+        <input type="checkbox" id="toggle-game">
+        <span class="slider"></span>
+      </label>
+      <span>ON</span>
+      <span id="game-status"></span>
+    </div>
   </div>
 </div>
 
-<script src="script.js" type="module"></script>
-<script type="module" src="game.js"></script>
-
+<script src="script.js"></script>
+<script src="game.js"></script>
 </body>
 </html>
