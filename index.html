@@ -19,20 +19,20 @@
   <div id="system-data"></div>
 </div>
 
-<!-- Admin Icon -->
-<div id="admin-icon">S</div>
 <!-- Admin Panel -->
-<div id="admin-panel" style="display:none;">
-  <input type="password" id="admin-pass" placeholder="Password admin" />
-  <button id="admin-login">Login</button>
-  <div id="admin-controls" style="display:none;">
-    <button id="toggle-game-on">ON</button>
-    <button id="toggle-game-off">OFF</button>
-    <span id="game-status">Game: OFF</span>
+<div id="admin-panel">
+  <div id="admin-icon">S</div>
+  <div id="admin-login-form" style="display:none;">
+    <input type="password" id="admin-pass" placeholder="Password admin" />
+    <button id="admin-login">Login</button>
+    <div id="admin-controls" style="display:none;">
+      <button id="toggle-game">Toggle Game</button>
+      <span id="game-status"></span>
+    </div>
   </div>
 </div>
 
-<script type="module" src="game.js"></script>
 <script src="script.js"></script>
+<script src="game.js"></script>
 </body>
 </html>
