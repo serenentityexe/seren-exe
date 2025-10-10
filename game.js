@@ -1,33 +1,25 @@
-// ----------------- Game Logic -----------------
-export function startGame(level, progress){
-  const levels = [
-    { question:"ANAGRAM: Rearrange 'NODE' to form a word", answer:"DONE" },
-    { question:"CIPHER: Decode 'Uifsf' using Caesar +1", answer:"There" }
-  ];
+// 2 livelli di prova
+window.startGame = function(){
+  enqueueLine("> GAME MODULE LOADING...",false,true);
+  enqueueLine("> WELCOME TO SEREN.EXE GAME...",false,true);
+  // Livello 1
+  enqueueLine("[LEVEL 1] Solve: ANAGRAM OF 'SEREN' => ? (Type answer)",false,true);
+  const level1Handler = e=>{
+    if(e.key!=='Enter') return;
+    const ans = input.value.trim().toLowerCase(); input.value='';
+    if(ans==='seren'){ enqueueLine("> LEVEL 1 COMPLETED",false,true); window.removeEventListener('keydown',level1Handler); level2(); }
+    else enqueueLine("> WRONG ANSWER, TRY AGAIN",false,true);
+  };
+  window.addEventListener('keydown',level1Handler);
+};
 
-  let current = level-1;
-  if(current<0) current=0;
-
-  enqueueLine(`> LEVEL ${current+1}: ${levels[current].question}`, false, true);
-
-  const gameHandler = (ev)=>{
-    if(ev.key!=='Enter') return;
-    ev.preventDefault();
-    const cmd = input.value.trim();
-    input.value='';
-    if(cmd.toUpperCase()===levels[current].answer.toUpperCase()){
-      enqueueLine("> CORRECT! ADVANCING LEVEL...", false, true);
-      current++;
-      if(current<levels.length){
-        enqueueLine(`> LEVEL ${current+1}: ${levels[current].question}`, false, true);
-      } else {
-        enqueueLine("> GAME COMPLETED!", false, true);
-        window.removeEventListener('keydown', gameHandler);
-      }
-    } else {
-      enqueueLine("> INCORRECT, TRY AGAIN.", false, true);
-    }
-  }
-
-  window.addEventListener('keydown', gameHandler);
+function level2(){
+  enqueueLine("[LEVEL 2] Solve: ANAGRAM OF 'ENTITY' => ?",false,true);
+  const level2Handler = e=>{
+    if(e.key!=='Enter') return;
+    const ans = input.value.trim().toLowerCase(); input.value='';
+    if(ans==='entity'){ enqueueLine("> LEVEL 2 COMPLETED",false,true); window.removeEventListener('keydown',level2Handler); enqueueLine("> GAME SESSION COMPLETE",false,true);}
+    else enqueueLine("> WRONG ANSWER, TRY AGAIN",false,true);
+  };
+  window.addEventListener('keydown',level2Handler);
 }
