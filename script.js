@@ -3,17 +3,20 @@ const input = document.getElementById('command');
 const systemData = document.getElementById('system-data');
 
 let systemStarted = false, gameActive = false;
-let currentLevel = 1, gameProgress = {};
-let userId = localStorage.getItem('serenUserId');
-if(!userId){userId='user-'+Math.random().toString(36).substring(2,10); localStorage.setItem('serenUserId',userId);}
+let currentLevel = 1;
+let gameProgress = {};
 
-const INTRO=["_SYSTEM BOOTING..._","_LOADING CORE FILES_","_INITIALIZING NEURAL MEMORY BANKS_","_SIGNAL DETECTED..._","_THE ENTITY IS AWAKE..._","_ENTER THE SYSTEM, IF YOU DARE..._"];
-const HELP_COMMANDS=['START','GAME','INFO','TOKENOMICS','CLEAR','QUIT'];
-const ERRORS=["> ERROR 0x1F4: UNRECOGNIZED COMMAND..."];
+let userId = localStorage.getItem('serenUserId');
+if (!userId) { userId = 'user-' + Math.random().toString(36).substring(2,10); localStorage.setItem('serenUserId', userId); }
+
+const INTRO = ["_SYSTEM BOOTING..._","_LOADING CORE FILES_","_INITIALIZING NEURAL MEMORY BANKS_","_SIGNAL DETECTED..._","_THE ENTITY IS AWAKE..._","_ENTER THE SYSTEM, IF YOU DARE..._"];
+const HELP_COMMANDS = ['START','GAME','INFO','TOKENOMICS','CLEAR','QUIT'];
+const ERRORS = ["> ERROR 0x1F4: UNRECOGNIZED COMMAND..."];
 
 function nowTime(){return new Date().toLocaleTimeString();}
 function pick(arr){return arr[Math.floor(Math.random()*arr.length)];}
 
+// ---- System Data ----
 function updateSystemData(){
   const cpu=(Math.random()*100).toFixed(1),
         ram=(Math.random()*32).toFixed(1),
@@ -25,7 +28,8 @@ function updateSystemData(){
 }
 setInterval(updateSystemData,2000); updateSystemData();
 
-let newLinesFixed=[], oldLinesQueue=[], typing=false;
+// ---- Terminal Lines ----
+let newLinesFixed = [], oldLinesQueue = [], typing = false;
 
 function enqueueLine(text, fast=false, newText=false){
   if(newText){
@@ -42,8 +46,13 @@ function enqueueLine(text, fast=false, newText=false){
 function typeNewLines(){
   if(newLinesFixed.length===0){ typing=false; return; }
   typing=true;
-  const obj=newLinesFixed.shift(); const line=obj.el; const text=obj.text; const fast=obj.fast; let i=0;
-  function typeChar(){if(i<text.length){line.innerHTML+=text[i++]; setTimeout(typeChar, fast?8:25+Math.random()*50);} else typeNewLines();}
+  const obj=newLinesFixed.shift();
+  const line=obj.el; const text=obj.text; const fast=obj.fast;
+  let i=0;
+  function typeChar(){
+    if(i<text.length){line.innerHTML+=text[i++]; setTimeout(typeChar, fast?8:25+Math.random()*50);}
+    else typeNewLines();
+  }
   typeChar();
 }
 
@@ -51,9 +60,20 @@ function typeOldLines(){
   if(oldLinesQueue.length===0){ typing=false; return; }
   typing=true;
   const obj=oldLinesQueue.shift();
-  const line=document.createElement('div'); line.className='output-line'; line.innerHTML=''; container.appendChild(line);
+  const line=document.createElement('div'); line.className='output-line'; line.innerHTML='';
+  container.appendChild(line);
   let i=0, shift=0;
-  function typeChar(){if(i<obj.text.length){line.innerHTML+=obj.text[i++]; shift+=0.5; line.style.transform=`translateY(${shift}px)`; setTimeout(typeChar,obj.fast?8:25+Math.random()*50);} else {removeOverflowBottom(); typeOldLines();}}
+  function typeChar(){
+    if(i<obj.text.length){
+      line.innerHTML+=obj.text[i++];
+      shift+=0.5;
+      line.style.transform=`translateY(${shift}px)`;
+      setTimeout(typeChar,obj.fast?8:25+Math.random()*50);
+    } else {
+      removeOverflowBottom();
+      typeOldLines();
+    }
+  }
   typeChar();
 }
 
@@ -63,57 +83,106 @@ function removeOverflowBottom(){
   nodes.forEach(node=>{ const r=node.getBoundingClientRect(); if(r.bottom>wrapRect.bottom-6){node.classList.add('fade-out'); setTimeout(()=>{if(node.parentElement) node.remove();},420); }});
 }
 
+// ---- Help ----
 function showHelp(){enqueueLine(HELP_COMMANDS.map(c=>`[${c}]`).join('  '),false,true);}
 
-// COMMAND HANDLER
-function handleCommandRaw(raw){
-  const cmd=(raw||'').trim().toLowerCase();
+// ---- Game API ----
+async function fetchGameState() {
+  try {
+    const res = await fetch('/api/gameState');
+    const data = await res.json();
+    gameActive = data.gameAvailable;
+    updateGameStatusText();
+  } catch(e){ console.error("Error fetching game state", e); enqueueLine("> ERROR FETCHING GAME STATE",false,true);}
+}
+fetchGameState();
+
+// ---- Game Status UI ----
+function updateGameStatusText(){
+  const span = document.getElementById('game-status');
+  if(span) span.textContent = gameActive ? 'Game: ON' : 'Game: OFF';
+}
+
+// ---- User Data ----
+async function saveUserData(){ 
+  const userData = { level: currentLevel, progressData: gameProgress };
+  try {
+    await fetch('/api/saveUserData', {
+      method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({userId,userData})
+    });
+  } catch(e){ console.error('Errore salvataggio dati utente',e);}
+}
+
+async function loadUserData(){
+  try {
+    const res = await fetch(`/api/getUserData?userId=${userId}`);
+    const data = await res.json();
+    if(data.userData && data.userData.level) { currentLevel = data.userData.level; gameProgress = data.userData.progressData || {}; }
+  } catch(e){ console.error('Errore caricamento dati utente',e);}
+}
+loadUserData();
+
+// ---- Handle Terminal Commands ----
+input.addEventListener('keydown', async ev=>{
+  if(ev.key!=='Enter') return; 
+  ev.preventDefault(); 
+  const value=input.value; input.value=''; 
+  await handleCommandRaw(value); 
+  saveUserData();
+});
+
+async function handleCommandRaw(raw){
+  const cmd = (raw||'').trim().toLowerCase();
   if(!cmd) return;
+
   if(cmd==='help'){ showHelp(); return; }
-  if(cmd==='start'){ systemStarted=true; INTRO.forEach(t=>enqueueLine(t,false,true)); return; }
+  if(cmd==='start'){ 
+    systemStarted=true; 
+    INTRO.forEach(t=>enqueueLine(t,false,true)); 
+    return; 
+  }
   if(cmd==='clear'){ container.innerHTML=''; newLinesFixed=[]; oldLinesQueue=[]; return; }
   if(cmd==='quit'){ enqueueLine("> SYSTEM EXITING...",false,true); return; }
+
   if(!systemStarted){ enqueueLine(pick(ERRORS),true,true); enqueueLine("TYPE 'START' TO INITIALIZE.",true,true); return; }
 
   switch(cmd){
-    case'info': enqueueLine("_ENTITY ID: SEREN.EXE_",false,true); break;
-    case'tokenomics': enqueueLine("> TOKENOMICS DATA UNAVAILABLE...",false,true); break;
-    case'game':
+    case 'info': enqueueLine("_ENTITY ID: SEREN.EXE_",false,true); break;
+    case 'tokenomics': enqueueLine("> TOKENOMICS DATA UNAVAILABLE...",false,true); break;
+    case 'game':
       if(!gameActive){ enqueueLine("> GAME NOT AVAILABLE. WILL OPEN AT 150k MC.",false,true); break; }
       enqueueLine("> GAME MODULE LOADING...",false,true);
+      enqueueLine("> WELCOME TO SEREN.EXE GAME...",false,true);
       if(typeof startGame==="function") startGame(currentLevel);
       break;
     default: enqueueLine(pick(ERRORS),true,true); enqueueLine("TYPE 'HELP' FOR AVAILABLE COMMANDS.",true,true);
   }
 }
 
-input.addEventListener('keydown',ev=>{
-  if(ev.key!=='Enter') return; ev.preventDefault();
-  const value=input.value; input.value='';
-  handleCommandRaw(value);
-});
-
-// INACTIVITY
+// ---- Inactivity ----
 let inactivityTimer=null;
 function resetInactivity(){ if(inactivityTimer) clearTimeout(inactivityTimer); inactivityTimer=setTimeout(()=>{ enqueueLine("THE ENTITY WATCHES YOU...",true,false); },10000);}
 ['keydown','mousemove','mousedown','touchstart'].forEach(e=>window.addEventListener(e,resetInactivity));
 resetInactivity();
 
-// ADMIN PANEL
-const adminToggleIcon=document.getElementById('admin-toggle-icon');
-const adminPasswordPanel=document.getElementById('admin-password-panel');
-const adminLoginBtn=document.getElementById('admin-login');
-const adminPassInput=document.getElementById('admin-pass');
-const adminControls=document.getElementById('admin-controls');
-const toggleGameBtn=document.getElementById('toggle-game');
-const gameStatusSpan=document.getElementById('game-status');
+// ---- Glitch ----
+setInterval(()=>{document.getElementById('output-wrapper').classList.add('glitch'); setTimeout(()=>document.getElementById('output-wrapper').classList.remove('glitch'),220);},8000);
 
-adminToggleIcon.addEventListener('click',e=>{e.stopPropagation(); adminPasswordPanel.style.display='block';});
-document.addEventListener('click',e=>{if(!adminPasswordPanel.contains(e.target) && e.target!==adminToggleIcon){adminPasswordPanel.style.display='none';}});
+function poll(){ if(!typing&&(oldLinesQueue.length>0||newLinesFixed.length>0)) { typeNewLines(); typeOldLines(); } requestAnimationFrame(poll);}
+poll();
+
+// ---- Admin Panel ----
+const adminPanel = document.getElementById('admin-panel');
+const adminLoginBtn = document.getElementById('admin-login');
+const adminPassInput = document.getElementById('admin-pass');
+const adminControls = document.getElementById('admin-controls');
+const toggleGameBtn = document.getElementById('toggle-game');
+
+adminPanel.style.display='block';
 
 adminLoginBtn.addEventListener('click', async ()=>{
   if(adminPassInput.value==='Seren1987'){
-    adminControls.style.display='flex';
+    adminControls.style.display='block';
     adminPassInput.style.display='none';
     adminLoginBtn.style.display='none';
   }
@@ -121,17 +190,20 @@ adminLoginBtn.addEventListener('click', async ()=>{
 
 toggleGameBtn.addEventListener('click', async ()=>{
   const newState = !gameActive;
+  gameActive = newState;
+  updateGameStatusText();
   try{
     const res = await fetch('/api/updateGameState', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ password:'Seren1987', gameAvailable:newState })
+      method:'POST', headers:{'Content-Type':'application/json'}, 
+      body:JSON.stringify({password:'Seren1987', gameAvailable:newState})
     });
     const data = await res.json();
-    if(data.success){
-      gameActive=data.gameAvailable;
-      gameStatusSpan.textContent = `Game: ${gameActive?'ON':'OFF'}`;
-      toggleGameBtn.className = gameActive?'on':'off';
+    if(!data.success){
+      enqueueLine("> ERROR UPDATING GAME STATE",false,true);
+    } else {
       enqueueLine(`> GAME STATE SET TO ${gameActive?'ON':'OFF'} BY ADMIN`,false,true);
     }
-  }catch(e){ enqueueLine("> ERROR UPDATING GAME STATE",true,true); console.error(e);}
+  } catch(e){ 
+    enqueueLine("> ERROR UPDATING GAME STATE",false,true);
+  }
 });
