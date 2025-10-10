@@ -69,39 +69,50 @@ window.saveUserProgress = async function(data){
   }
 };
 
-/* API helpers */
-async function fetchGameState(){
+// script.js
+async function getGameState() {
   try {
-    const res = await fetch('/api/gameState', {cache:'no-store'});
+    const res = await fetch('/api/gameState');
+    if (!res.ok) throw new Error('Response not OK');
     const data = await res.json();
-    if (data && (typeof data.gameAvailable !== 'undefined')) {
-      gameActive = !!data.gameAvailable;
-      toggleCheckbox.checked = gameActive;
-      gameStatusSpan.textContent = gameActive ? 'Game: ON' : 'Game: OFF';
-    }
-  } catch(e){ console.error("fetchGameState error", e); enqueueLine("> ERROR FETCHING GAME STATE", false, true); }
-}
-async function updateGameStateOnServer(newState){
-  try {
-    const res = await fetch('/api/updateGameState', {
-      method:'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ password: 'Seren1987', gameAvailable: newState })
-    });
-    const data = await res.json();
-    if (data && data.success) {
-      gameActive = !!data.gameAvailable;
-      toggleCheckbox.checked = gameActive;
-      gameStatusSpan.textContent = gameActive ? 'Game: ON' : 'Game: OFF';
-      enqueueLine(`> GAME STATE SET TO ${gameActive ? 'ON' : 'OFF'} BY ADMIN`, false, true);
-    } else {
-      enqueueLine('> FAILED TO CHANGE GAME STATE', false, true);
-    }
-  } catch(e) {
-    console.error("updateGameStateOnServer error", e);
-    enqueueLine('> ERROR: COMMUNICATION WITH SERVER FAILED', false, true);
+    return data.state;
+  } catch (err) {
+    console.error('Error fetching game state:', err);
+    displayToConsole("> ERROR FETCHING GAME STATE\n> ERROR: COMMUNICATION WITH SERVER FAILED");
+    return 'OFF';
   }
 }
+
+async function toggleGameState(newState) {
+  try {
+    const res = await fetch('/api/gameState', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ state: newState })
+    });
+
+    if (!res.ok) throw new Error('Bad response from server');
+    const data = await res.json();
+
+    if (data.success) {
+      displayToConsole(`> GAME STATE CHANGED TO ${newState}`);
+    } else {
+      displayToConsole("> FAILED TO UPDATE GAME STATE");
+    }
+  } catch (err) {
+    console.error('Error updating game state:', err);
+    displayToConsole("> ERROR COMMUNICATING WITH SERVER");
+  }
+}
+
+// esempio uso nel toggle:
+document.getElementById('toggleButton').addEventListener('click', async () => {
+  const current = await getGameState();
+  const newState = current === 'ON' ? 'OFF' : 'ON';
+  await toggleGameState(newState);
+  updateToggleUI(newState);
+});
+
 
 /* Admin open/close */
 adminIcon.addEventListener('click', (e) => {
