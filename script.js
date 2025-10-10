@@ -108,4 +108,30 @@ const adminControls=document.getElementById('admin-controls');
 const toggleGameBtn=document.getElementById('toggle-game');
 const gameStatusSpan=document.getElementById('game-status');
 
-adminToggleIcon.addEventListener('click',e=>{
+adminToggleIcon.addEventListener('click',e=>{e.stopPropagation(); adminPasswordPanel.style.display='block';});
+document.addEventListener('click',e=>{if(!adminPasswordPanel.contains(e.target) && e.target!==adminToggleIcon){adminPasswordPanel.style.display='none';}});
+
+adminLoginBtn.addEventListener('click', async ()=>{
+  if(adminPassInput.value==='Seren1987'){
+    adminControls.style.display='flex';
+    adminPassInput.style.display='none';
+    adminLoginBtn.style.display='none';
+  }
+});
+
+toggleGameBtn.addEventListener('click', async ()=>{
+  const newState = !gameActive;
+  try{
+    const res = await fetch('/api/updateGameState', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ password:'Seren1987', gameAvailable:newState })
+    });
+    const data = await res.json();
+    if(data.success){
+      gameActive=data.gameAvailable;
+      gameStatusSpan.textContent = `Game: ${gameActive?'ON':'OFF'}`;
+      toggleGameBtn.className = gameActive?'on':'off';
+      enqueueLine(`> GAME STATE SET TO ${gameActive?'ON':'OFF'} BY ADMIN`,false,true);
+    }
+  }catch(e){ enqueueLine("> ERROR UPDATING GAME STATE",true,true); console.error(e);}
+});
