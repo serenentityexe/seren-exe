@@ -1,3 +1,6 @@
+// 🔹 Base API endpoint (vercel backend)
+const API_BASE = "https://api-ten-inky-24.vercel.app";
+
 const container = document.getElementById('lines-container');
 const input = document.getElementById('command');
 const systemData = document.getElementById('system-data');
