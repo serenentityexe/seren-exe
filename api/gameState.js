@@ -1,9 +1,21 @@
-import { Redis } from '@upstash/redis';
-const redis = new Redis({ url: process.env.UPSTASH_REDIS_REST_URL, token: process.env.UPSTASH_REDIS_REST_TOKEN });
+import { Redis } from "@upstash/redis";
 
-export default async function handler(req,res){
-  try{
-    const gameAvailable = await redis.get('gameActive');
-    res.status(200).json({gameAvailable:gameAvailable===true});
-  }catch(e){ res.status(500).json({error:'SERVER ERROR'});}
+const redis = new Redis({
+  url: "https://busy-toad-11432.upstash.io",
+  token: "ASyoAAIncDIxOWE2YTAyYzUzODE0MzEzYjdkODI2NDlkMzE0MzU1Y3AyMTE0MzI",
+});
+
+export default async function handler(req, res) {
+  try {
+    let gameAvailable = await redis.get("gameAvailable");
+    if (gameAvailable === null) {
+      // Se non esiste ancora, inizializza a OFF
+      await redis.set("gameAvailable", false);
+      gameAvailable = false;
+    }
+    res.status(200).json({ gameAvailable });
+  } catch (error) {
+    console.error("Error fetching game state:", error);
+    res.status(500).json({ error: "Error fetching game state" });
+  }
 }
