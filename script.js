@@ -159,3 +159,37 @@ async function setGameState(active){
 
 toggleOnBtn.addEventListener('click',()=>setGameState(true));
 toggleOffBtn.addEventListener('click',()=>setGameState(false));
+// === GLOBAL GAME STATUS INDICATOR ===
+async function updateGlobalStatus() {
+  const light = document.getElementById('status-light');
+  const text = document.getElementById('status-text');
+
+  try {
+    const res = await fetch('https://api-ten-inky-24.vercel.app/api/gameState');
+    const data = await res.json();
+
+    if (data.status === "on") {
+      light.classList.remove('red');
+      light.classList.add('green');
+      text.textContent = "> SEREN: ACTIVATED";
+      text.style.color = "#00ff66";
+    } else {
+      light.classList.remove('green');
+      light.classList.add('red');
+      text.textContent = "> SEREN: DEACTIVATED";
+      text.style.color = "#ff0033";
+    }
+  } catch (err) {
+    console.error("Error fetching status:", err);
+    light.classList.remove('green');
+    light.classList.add('red');
+    text.textContent = "> SEREN: CONNECTION ERROR";
+    text.style.color = "#ff0033";
+  }
+}
+
+// Controlla lo stato ogni 10 secondi
+setInterval(updateGlobalStatus, 10000);
+
+// Controlla lo stato all'avvio
+updateGlobalStatus();
