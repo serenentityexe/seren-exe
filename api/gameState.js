@@ -6,15 +6,11 @@ const redis = new Redis({
 });
 
 export default async function handler(req, res) {
-  if (req.method === 'GET') {
-    try {
-      const state = await redis.get('gameState');
-      res.status(200).json({ status: state || 'off' });
-    } catch (error) {
-      console.error('Error fetching game state:', error);
-      res.status(500).json({ error: 'Error fetching game state' });
-    }
-  } else {
-    res.status(405).json({ error: 'Method not allowed' });
+  try {
+    const gameActive = await redis.get('gameActive');
+    res.status(200).json({ gameAvailable: gameActive === 'true' });
+  } catch (e) {
+    console.error('Error fetching game state:', e);
+    res.status(500).json({ success: false, error: 'Error fetching game state' });
   }
 }
