@@ -1,4 +1,4 @@
-import { Redis } from '@upstash/redis';
+import { Redis } from "@upstash/redis";
 
 const redis = new Redis({
   url: process.env.UPSTASH_REDIS_REST_URL,
@@ -6,16 +6,18 @@ const redis = new Redis({
 });
 
 export default async function handler(req, res) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
+
   try {
-    const { userId, userData } =
-      typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+    const { userId, data } = req.body;
+    if (!userId) return res.status(400).json({ error: "Missing userId" });
 
-    if (!userId || !userData)
-      return res.status(400).json({ error: 'Missing data' });
-
-    await redis.set(`user:${userId}`, JSON.stringify(userData));
-    res.status(200).json({ success: true });
-  } catch (e) {
-    res.status(500).json({ error: 'Error saving user data' });
+    await redis.set(`user:${userId}`, JSON.stringify(data));
+    return res.status(200).json({ success: true });
+  } catch (err) {
+    console.error("Error saving user data:", err);
+    return res.status(500).json({ error: "Failed to save user data" });
   }
 }
