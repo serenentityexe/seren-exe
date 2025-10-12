@@ -1,23 +1,6 @@
 {
-  "version": 2,
-  "builds": [
-    {
-      "src": "seren-exe/api/*.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "seren-exe/**/*",
-      "use": "@vercel/static"
-    }
-  ],
   "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/seren-exe/api/$1.js"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/seren-exe/$1"
-    }
+    { "src": "/", "dest": "/seren-exe/index.html" },
+    { "src": "/(.*)", "dest": "/seren-exe/$1" }
   ]
 }
