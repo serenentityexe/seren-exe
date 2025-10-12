@@ -6,18 +6,18 @@ const redis = new Redis({
 });
 
 export default async function handler(req, res) {
-  if (req.method === 'POST') {
-    try {
-      const currentState = await redis.get('gameState');
-      const newState = currentState === 'on' ? 'off' : 'on';
-      await redis.set('gameState', newState);
-      console.log('Game state updated to:', newState);
-      res.status(200).json({ status: newState });
-    } catch (error) {
-      console.error('Error updating game state:', error);
-      res.status(500).json({ error: 'Error updating game state' });
+  try {
+    const { password, gameAvailable } =
+      typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+
+    if (password !== 'Seren1987') {
+      return res.status(401).json({ success: false, error: 'Unauthorized' });
     }
-  } else {
-    res.status(405).json({ error: 'Method not allowed' });
+
+    await redis.set('gameActive', gameAvailable ? 'true' : 'false');
+    res.status(200).json({ success: true, gameAvailable });
+  } catch (e) {
+    console.error('Error updating game state:', e);
+    res.status(500).json({ success: false, error: 'Error updating game state' });
   }
 }
