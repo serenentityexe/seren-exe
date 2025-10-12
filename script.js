@@ -1,7 +1,7 @@
 // Seren.exe terminal logic (frontend)
 
 // 🔹 Base API endpoint (vercel backend)
-const API_BASE = "https://api-ten-inky-24.vercel.app";
+const API_BASE = "https://api-cyan-seven-42.vercel.app";
 
 const container = document.getElementById("lines-container");
 const input = document.getElementById("command");
@@ -24,7 +24,7 @@ const INTRO = [
   "_INITIALIZING NEURAL MEMORY BANKS_",
   "_SIGNAL DETECTED..._",
   "_THE ENTITY IS AWAKE..._",
-  "_ENTER THE SYSTEM, IF YOU DARE..._",
+  "_ENTER THE SYSTEM, IF YOU DARE...",
 ];
 const HELP_COMMANDS = ["START", "GAME", "INFO", "TOKENOMICS", "CLEAR", "QUIT"];
 const ERRORS = ["> ERROR 0x1F4: UNRECOGNIZED COMMAND..."];
@@ -140,7 +140,7 @@ async function fetchGameState() {
   try {
     const res = await fetch(`${API_BASE}/api/gameState`);
     const data = await res.json();
-    gameActive = data.gameAvailable;
+    gameActive = data.gameState?.gameOn || false;
     updateGameStatusText();
   } catch (e) {
     console.error("Error fetching game state:", e);
@@ -160,7 +160,7 @@ async function saveUserData() {
     await fetch(`${API_BASE}/api/saveUserData`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId, userData }),
+      body: JSON.stringify({ id: userId, value: userData }),
     });
   } catch (e) {
     console.error("Errore salvataggio dati utente", e);
@@ -169,11 +169,11 @@ async function saveUserData() {
 
 async function loadUserData() {
   try {
-    const res = await fetch(`${API_BASE}/api/getUserData?userId=${userId}`);
+    const res = await fetch(`${API_BASE}/api/getUserData?id=${userId}`);
     const data = await res.json();
-    if (data.userData && data.userData.level) {
-      currentLevel = data.userData.level;
-      gameProgress = data.userData.progressData || {};
+    if (data.data) {
+      currentLevel = data.data.level || 1;
+      gameProgress = data.data.progressData || {};
     }
   } catch (e) {
     console.error("Errore caricamento dati utente", e);
@@ -277,7 +277,8 @@ const adminPanel = document.getElementById("admin-panel");
 const adminLoginBtn = document.getElementById("admin-login");
 const adminPassInput = document.getElementById("admin-pass");
 const adminControls = document.getElementById("admin-controls");
-const toggleGameBtn = document.getElementById("toggle-game");
+const toggleGameOnBtn = document.getElementById("toggle-game-on");
+const toggleGameOffBtn = document.getElementById("toggle-game-off");
 
 adminPanel.style.display = "block";
 
@@ -289,17 +290,24 @@ adminLoginBtn.addEventListener("click", async () => {
   }
 });
 
-toggleGameBtn.addEventListener("click", async () => {
-  const newState = !gameActive;
+toggleGameOnBtn.addEventListener("click", async () => {
+  await updateGameState(true);
+});
+
+toggleGameOffBtn.addEventListener("click", async () => {
+  await updateGameState(false);
+});
+
+async function updateGameState(newState) {
   try {
     const res = await fetch(`${API_BASE}/api/updateGameState`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password: "Seren1987", gameAvailable: newState }),
+      body: JSON.stringify({ state: { gameOn: newState } }),
     });
     const data = await res.json();
     if (data.success) {
-      gameActive = data.gameAvailable;
+      gameActive = newState;
       updateGameStatusText();
       enqueueLine(`> GAME STATE SET TO ${gameActive ? "ON" : "OFF"} BY ADMIN`, false, true);
     } else {
@@ -309,4 +317,4 @@ toggleGameBtn.addEventListener("click", async () => {
     enqueueLine("> ERROR UPDATING GAME STATE", false, true);
     console.error("Error updating game state:", e);
   }
-});
+}
