@@ -1,8 +1,8 @@
 import { Redis } from "@upstash/redis";
 
 const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN,
+  url: "https://busy-toad-11432.upstash.io",
+  token: "ASyoAAIncDIxOWE2YTAyYzUzODE0MzEzYjdkODI2NDlkMzE0MzU1Y3AyMTE0MzI",
 });
 
 export default async function handler(req, res) {
@@ -19,6 +19,7 @@ export default async function handler(req, res) {
   try {
     await redis.set("gameAvailable", gameAvailable);
     const current = await redis.get("gameAvailable");
+    console.log("Game state updated:", current);
     res.status(200).json({ success: true, gameAvailable: current });
   } catch (error) {
     console.error("Error updating game state:", error);
