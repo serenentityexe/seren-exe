@@ -1,9 +1,8 @@
-/* Terminal fullscreen */
 body, html {
     margin: 0;
     padding: 0;
-    background-color: #000;
-    color: #00ffea;
+    background-color: #0a0a0a;
+    color: #00ffe0;
     font-family: 'Courier New', monospace;
     height: 100%;
     overflow: hidden;
@@ -15,6 +14,7 @@ body, html {
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
+    text-shadow: 0 0 5px #00ffe0;
 }
 
 #terminal-output {
@@ -31,13 +31,15 @@ body, html {
 
 .prompt-symbol {
     margin-right: 10px;
+    font-weight: bold;
+    color: #00ffea;
+    text-shadow: 0 0 8px #00ffea, 0 0 12px #00ffea;
 }
 
-/* Input */
 #terminal-input {
     background: transparent;
     border: none;
-    color: #00ffea;
+    color: #00ffe0;
     font-family: 'Courier New', monospace;
     font-size: 18px;
     outline: none;
@@ -54,23 +56,17 @@ body, html {
     position: absolute;
     left: 0;
 }
-.glitch::before {
-    animation: glitchTop 1s infinite;
-    clip: rect(0, 900px, 0, 0);
-}
-.glitch::after {
-    animation: glitchBottom 1s infinite;
-    clip: rect(0, 900px, 0, 0);
-}
+.glitch::before { animation: glitchTop 1s infinite; clip: rect(0,900px,0,0);}
+.glitch::after { animation: glitchBottom 1s infinite; clip: rect(0,900px,0,0);}
 
 @keyframes glitchTop {
-    0% { transform: translate(0); clip: rect(0,900px,0,0);}
-    50% { transform: translate(-2px, -2px);}
+    0% { transform: translate(0); }
+    50% { transform: translate(-2px,-2px);}
     100% { transform: translate(0);}
 }
 @keyframes glitchBottom {
     0% { transform: translate(0);}
-    50% { transform: translate(2px, 2px);}
+    50% { transform: translate(2px,2px);}
     100% { transform: translate(0);}
 }
 
@@ -81,9 +77,21 @@ body, html {
     right: 20px;
     background: #111;
     border: 1px solid #00ffea;
-    padding: 10px;
+    padding: 15px;
     display: flex;
     flex-direction: column;
     gap: 10px;
+    box-shadow: 0 0 15px #00ffe0;
+    border-radius: 8px;
+}
+#admin-panel input, #admin-panel button {
+    padding: 5px 10px;
+    border: 1px solid #00ffe0;
+    background: #000;
+    color: #00ffe0;
+    outline: none;
+    font-family: 'Courier New', monospace;
+    border-radius: 4px;
+    cursor: pointer;
 }
 .hidden { display: none; }
