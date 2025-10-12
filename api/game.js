@@ -1,5 +1,6 @@
 import fetch from "node-fetch";
 
+// Variabili ambiente Vercel
 const UPSTASH_URL = process.env.UPSTASH_REDIS_REST_URL;
 const UPSTASH_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
 
@@ -17,16 +18,13 @@ export default async function handler(req, res) {
 
   try {
     if (method === "GET") {
-      // Legge lo stato
-      const resp = await fetch(`${UPSTASH_URL}/get/gameActive`, { headers });
-      const data = await resp.json();
-      res.status(200).json({ gameActive: data.result === "true" });
+      const response = await fetch(`${UPSTASH_URL}/get/gameActive`, { headers });
+      const data = await response.json();
+      const active = data.result === "true";
+      res.status(200).json({ gameActive: active });
     } else if (method === "POST") {
-      // Imposta lo stato
       const { gameActive } = req.body;
-      if (typeof gameActive !== "boolean") {
-        return res.status(400).json({ error: "gameActive must be boolean" });
-      }
+      if (typeof gameActive !== "boolean") return res.status(400).json({ error: "gameActive must be boolean" });
       await fetch(`${UPSTASH_URL}/set/gameActive/${gameActive}`, { headers, method: "POST" });
       res.status(200).json({ gameActive });
     } else {
