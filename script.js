@@ -1,7 +1,9 @@
+// script.js — Seren.exe main terminal logic
+// 🌐 API base URL per comunicazione globale con backend
+const API_BASE_URL = "https://api-ten-inky-24.vercel.app";
 const container = document.getElementById('lines-container');
 const input = document.getElementById('command');
 const systemData = document.getElementById('system-data');
-const API_BASE = 'https://api-ten-inky-24.vercel.app/api';
 
 let systemStarted = false,
   gameActive = false,
