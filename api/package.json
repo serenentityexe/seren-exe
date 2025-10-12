@@ -1,9 +1,8 @@
 {
   "name": "seren-api",
   "version": "1.0.0",
-  "description": "Backend API for Seren.exe game system",
   "type": "module",
   "dependencies": {
-    "@upstash/redis": "^1.22.0"
+    "@upstash/redis": "^1.20.0"
   }
 }
