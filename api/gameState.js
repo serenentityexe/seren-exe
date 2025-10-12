@@ -1,4 +1,4 @@
-import { Redis } from '@upstash/redis';
+import { Redis } from "@upstash/redis";
 
 const redis = new Redis({
   url: process.env.UPSTASH_REDIS_REST_URL,
@@ -7,10 +7,11 @@ const redis = new Redis({
 
 export default async function handler(req, res) {
   try {
-    const gameActive = await redis.get('gameActive');
-    res.status(200).json({ gameAvailable: gameActive === 'true' });
-  } catch (e) {
-    console.error('Error fetching game state:', e);
-    res.status(500).json({ success: false, error: 'Error fetching game state' });
+    const state = await redis.get("gameAvailable");
+    const gameAvailable = state === "true";
+    return res.status(200).json({ gameAvailable });
+  } catch (err) {
+    console.error("❌ Error fetching game state:", err);
+    return res.status(500).json({ error: "Failed to fetch game state" });
   }
 }
