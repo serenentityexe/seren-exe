@@ -11,9 +11,9 @@ export default async function handler(req, res) {
 
   try {
     const userData = await redis.get(`user:${userId}`);
-    return res.status(200).json({ userData: userData || {} });
-  } catch (err) {
-    console.error("Error fetching user data:", err);
-    return res.status(500).json({ error: "Failed to fetch user data" });
+    res.status(200).json({ userData: userData || null });
+  } catch (error) {
+    console.error("Error fetching user data:", error);
+    res.status(500).json({ error: "Error fetching user data" });
   }
 }
