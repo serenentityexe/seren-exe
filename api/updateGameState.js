@@ -10,17 +10,18 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
+  const { password, gameAvailable } = req.body;
+
+  if (password !== "Seren1987") {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
   try {
-    const { password, gameAvailable } = req.body;
-
-    if (password !== "Seren1987") {
-      return res.status(403).json({ error: "Invalid password" });
-    }
-
-    await redis.set("gameAvailable", gameAvailable ? "true" : "false");
-    return res.status(200).json({ success: true, gameAvailable });
-  } catch (err) {
-    console.error("❌ Error updating game state:", err);
-    return res.status(500).json({ error: "Failed to update game state" });
+    await redis.set("gameAvailable", gameAvailable);
+    const current = await redis.get("gameAvailable");
+    res.status(200).json({ success: true, gameAvailable: current });
+  } catch (error) {
+    console.error("Error updating game state:", error);
+    res.status(500).json({ success: false, error: "Error updating game state" });
   }
 }
