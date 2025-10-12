@@ -1,4 +1,4 @@
-import { Redis } from '@upstash/redis';
+import { Redis } from "@upstash/redis";
 
 const redis = new Redis({
   url: process.env.UPSTASH_REDIS_REST_URL,
@@ -6,18 +6,21 @@ const redis = new Redis({
 });
 
 export default async function handler(req, res) {
-  try {
-    const { password, gameAvailable } =
-      typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
 
-    if (password !== 'Seren1987') {
-      return res.status(401).json({ success: false, error: 'Unauthorized' });
+  try {
+    const { password, gameAvailable } = req.body;
+
+    if (password !== "Seren1987") {
+      return res.status(403).json({ error: "Invalid password" });
     }
 
-    await redis.set('gameActive', gameAvailable ? 'true' : 'false');
-    res.status(200).json({ success: true, gameAvailable });
-  } catch (e) {
-    console.error('Error updating game state:', e);
-    res.status(500).json({ success: false, error: 'Error updating game state' });
+    await redis.set("gameAvailable", gameAvailable ? "true" : "false");
+    return res.status(200).json({ success: true, gameAvailable });
+  } catch (err) {
+    console.error("❌ Error updating game state:", err);
+    return res.status(500).json({ error: "Failed to update game state" });
   }
 }
