@@ -1,6 +1,0 @@
-{
-  "routes": [
-    { "src": "/", "dest": "/seren-exe/index.html" },
-    { "src": "/(.*)", "dest": "/seren-exe/$1" }
-  ]
-}
