@@ -1,0 +1,13 @@
+{
+  "name": "seren-exe",
+  "version": "1.0.0",
+  "description": "Seren Terminal futuristico con Upstash",
+  "main": "script.js",
+  "scripts": {
+    "start": "vercel dev"
+  },
+  "dependencies": {
+    "node-fetch": "^3.4.1"
+  },
+  "type": "module"
+}
