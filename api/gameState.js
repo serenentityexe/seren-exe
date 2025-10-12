@@ -1,14 +1,15 @@
 import { Redis } from "@upstash/redis";
 
 const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN,
+  url: "https://busy-toad-11432.upstash.io",
+  token: "ASyoAAIncDIxOWE2YTAyYzUzODE0MzEzYjdkODI2NDlkMzE0MzU1Y3AyMTE0MzI",
 });
 
 export default async function handler(req, res) {
   try {
     let gameAvailable = await redis.get("gameAvailable");
     if (gameAvailable === null) {
+      // Se non esiste ancora, inizializza a OFF
       await redis.set("gameAvailable", false);
       gameAvailable = false;
     }
